@@ -58,8 +58,8 @@ router.get("/:slug", getModelBySlug);
 router.post("/", protect, createModel);
 
 // Update a model
-// PUT /api/models/:id
-router.put("/:id", protect, updateModel);
+// PATCH /api/models/:id
+router.patch("/:id", protect, updateModel);
 
 // Delete a model
 // DELETE /api/models/:id

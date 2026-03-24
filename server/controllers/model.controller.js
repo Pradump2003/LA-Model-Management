@@ -9,10 +9,8 @@ exports.getAllModels = async (req, res) => {
   try {
     const { page = 1, limit = 20, sort = "-createdAt" } = req.query;
 
+    // No .select() = returns ALL fields
     const models = await Model.find({ status: "active" })
-      .select(
-        "firstName lastName slug division categories photos.url photos.isPrimary stats",
-      )
       .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -231,7 +229,9 @@ exports.getFeaturedModels = async (req, res) => {
       status: "active",
       isFeatured: true,
     })
-      .select("firstName lastName slug division categories photos stats")
+      // .select(
+      //   "firstName lastName slug division categories photos stats isFeatured",
+      // )
       .sort("-createdAt")
       .limit(limit * 1);
 
@@ -264,7 +264,6 @@ exports.getNewFaces = async (req, res) => {
         { categories: "new-faces" },
       ],
     })
-      .select("firstName lastName slug division categories photos stats")
       .sort("-createdAt")
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -407,23 +406,34 @@ exports.createModel = async (req, res) => {
       categories,
       gender,
       dateOfBirth,
+      age,
+      ethnicity,
       stats,
       photos,
+      videos,
+      experience,
+      portfolio,
       social,
+      metrics,
       location,
+      features,
+      card,
       isFeatured,
       isNewFace,
+      metaTitle,
+      metaDescription,
+      keywords,
     } = req.body;
 
-    // Basic validation
+    // Validation
     if (!firstName || !lastName || !division || !categories) {
       return res.status(400).json({
         success: false,
-        message: "First name, last name, division, and categories are required",
+        message: "firstName, lastName, division, and categories are required",
       });
     }
 
-    // Auto-generate slug if not provided
+    // Auto-generate slug
     let slug = req.body.slug;
     if (!slug) {
       slug = `${firstName}-${lastName}`
@@ -432,15 +442,16 @@ exports.createModel = async (req, res) => {
         .replace(/^-+|-+$/g, "");
     }
 
-    // Check if slug already exists
+    // Check if slug exists
     const existingModel = await Model.findOne({ slug });
     if (existingModel) {
       return res.status(400).json({
         success: false,
-        message: `Model with slug "${slug}" already exists. Please provide a unique slug.`,
+        message: `Model with slug "${slug}" already exists`,
       });
     }
 
+    // Create model
     const model = await Model.create({
       firstName,
       lastName,
@@ -449,12 +460,23 @@ exports.createModel = async (req, res) => {
       categories,
       gender,
       dateOfBirth,
+      age,
+      ethnicity,
       stats: stats || {},
       photos: photos || [],
+      videos: videos || [],
+      experience,
+      portfolio: portfolio || {},
       social: social || {},
+      metrics: metrics || {},
       location: location || {},
+      features: features || {},
+      card: card || {},
       isFeatured: isFeatured || false,
       isNewFace: isNewFace || false,
+      metaTitle,
+      metaDescription,
+      keywords: keywords || [],
       status: "active",
     });
 
