@@ -24,36 +24,39 @@ const { protect } = require("../middlewares/auth.middleware");
 // GET /api/models
 router.get("/", getAllModels);
 
-// Get featured models
-// GET /api/models/featured
-router.get("/featured", getFeaturedModels);
+router.get("/search", searchModels); // Dedicated search endpoint
 
-// Get new faces
-// GET /api/models/new-faces
-router.get("/new-faces", getNewFaces);
+router.get("/:slug", getModelBySlug);
 
-// Search models
-// GET /api/models/search
-router.get("/search", searchModels);
+// // Get featured models
+// // GET /api/models/featured
+// router.get("/featured", getFeaturedModels);
 
-// Get models by division
-// GET /api/models/division/:division
-router.get("/division/:division", getModelsByDivision);
+// // Get new faces
+// // GET /api/models/new-faces
+// router.get("/new-faces", getNewFaces);
 
-// Get models by category
-// GET /api/models/category/:category
-router.get("/category/:category", getModelsByCategory);
+// // Search models
+// // GET /api/models/search
+// router.get("/search", searchModels);
 
-// Get models by division AND category
-// GET /api/models/division/:division/category/:category
-router.get(
-  "/division/:division/category/:category",
-  getModelsByDivisionAndCategory,
-);
+// // Get models by division
+// // GET /api/models/division/:division
+// router.get("/division/:division", getModelsByDivision);
+
+// // Get models by category
+// // GET /api/models/category/:category
+// router.get("/category/:category", getModelsByCategory);
+
+// // Get models by division AND category
+// // GET /api/models/division/:division/category/:category
+// router.get(
+//   "/division/:division/category/:category",
+//   getModelsByDivisionAndCategory,
+// );
 
 // Get single model by slug (MUST BE LAST)
 // GET /api/models/:slug
-router.get("/:slug", getModelBySlug);
 
 router.post("/", protect, createModel);
 

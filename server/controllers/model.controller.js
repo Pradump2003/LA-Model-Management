@@ -1,581 +1,331 @@
 // controllers/modelController.js
+const asyncHandler = require("express-async-handler");
 const Model = require("../models/model");
+const ApiResponse = require("../utils/ApiResponse.utils");
+
+// Helper: Escape regex special characters
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // ============================================
-// GET ALL MODELS
+// GET ALL MODELS (With Search & All Filters)
 // ============================================
+exports.getAllModels = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 20,
+    sort = "-createdAt",
+    division,
+    category,
+    gender,
+    experience,
+    isFeatured,
+    isNewFace,
+    search, // General search (searches multiple fields)
+    query, // Name search only (kept for backward compatibility)
+    minHeight,
+    maxHeight,
+    minAge,
+    maxAge,
+    hairColor,
+    eyeColor,
+    ethnicity,
+    location, // Search by location
+    skill, // Search by special skill
+    client, // Search by client worked with
+  } = req.query;
 
-exports.getAllModels = async (req, res) => {
-  try {
-    const { page = 1, limit = 20, sort = "-createdAt" } = req.query;
+  // Build filter
+  let filterQuery = { status: "active" };
 
-    // No .select() = returns ALL fields
-    const models = await Model.find({ status: "active" })
-      .sort(sort)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
+  // ============================================
+  // BASIC FILTERS
+  // ============================================
+  if (division) filterQuery.division = division;
+  if (category) filterQuery.categories = category;
+  if (gender) filterQuery.gender = gender;
+  if (experience) filterQuery.experience = experience;
+  if (isFeatured) filterQuery.isFeatured = isFeatured === "true";
+  if (isNewFace) filterQuery.isNewFace = isNewFace === "true";
 
-    const count = await Model.countDocuments({ status: "active" });
+  // ============================================
+  // SEARCH FILTERS
+  // ============================================
 
-    res.json({
-      success: true,
-      count: models.length,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      total: count,
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch models",
-      error: error.message,
-    });
-  }
-};
-
-// ============================================
-// GET MODELS BY DIVISION
-// ============================================
-exports.getModelsByDivision = async (req, res) => {
-  try {
-    const { division } = req.params;
-    const { page = 1, limit = 20, sort = "-createdAt" } = req.query;
-
-    // Validate division
-    const validDivisions = [
-      "women",
-      "men",
-      "newFaces",
-      "direct",
-      "special-booking",
-      "juniors",
+  // General Search (searches across multiple fields)
+  if (search) {
+    const searchRegex = new RegExp(escapeRegex(search), "i");
+    filterQuery.$or = [
+      { firstName: searchRegex },
+      { lastName: searchRegex },
+      { slug: searchRegex },
+      { ethnicity: searchRegex },
+      { "location.based": searchRegex },
+      { "portfolio.clients": searchRegex },
+      { "features.specialSkills": searchRegex },
+      { keywords: searchRegex },
+      { metaTitle: searchRegex },
     ];
-
-    if (!validDivisions.includes(division)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid division. Valid divisions are: ${validDivisions.join(", ")}`,
-      });
-    }
-
-    const models = await Model.find({
-      division,
-      status: "active",
-    })
-      .select("firstName lastName slug division categories photos stats")
-      .sort(sort)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const count = await Model.countDocuments({ division, status: "active" });
-
-    res.json({
-      success: true,
-      division,
-      count: models.length,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      total: count,
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch models",
-      error: error.message,
-    });
   }
-};
 
-// ============================================
-// GET MODELS BY CATEGORY
-// ============================================
-exports.getModelsByCategory = async (req, res) => {
-  try {
-    const { category } = req.params;
-    const { page = 1, limit = 20, sort = "-createdAt" } = req.query;
+  // Name-only search (backward compatible)
+  if (query && !search) {
+    const queryRegex = new RegExp(escapeRegex(query), "i");
+    filterQuery.$or = [{ firstName: queryRegex }, { lastName: queryRegex }];
+  }
 
-    // Validate category
-    const validCategories = [
-      "main-board",
-      "new-faces",
-      "direct",
-      "classic",
-      "girls",
-      "boys",
-      "family",
+  // ============================================
+  // ATTRIBUTE FILTERS
+  // ============================================
+
+  // Hair color
+  if (hairColor) {
+    filterQuery["stats.hairColor"] = new RegExp(escapeRegex(hairColor), "i");
+  }
+
+  // Eye color
+  if (eyeColor) {
+    filterQuery["stats.eyeColor"] = new RegExp(escapeRegex(eyeColor), "i");
+  }
+
+  // Ethnicity
+  if (ethnicity) {
+    filterQuery.ethnicity = new RegExp(escapeRegex(ethnicity), "i");
+  }
+
+  // Location based
+  if (location) {
+    filterQuery.$or = [
+      { "location.based": new RegExp(escapeRegex(location), "i") },
+      { "location.available": new RegExp(escapeRegex(location), "i") },
     ];
-
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid category. Valid categories are: ${validCategories.join(", ")}`,
-      });
-    }
-
-    const models = await Model.find({
-      categories: category,
-      status: "active",
-    })
-      .select("firstName lastName slug division categories photos stats")
-      .sort(sort)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const count = await Model.countDocuments({
-      categories: category,
-      status: "active",
-    });
-
-    res.json({
-      success: true,
-      category,
-      count: models.length,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      total: count,
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch models",
-      error: error.message,
-    });
   }
-};
+
+  // Special skill
+  if (skill) {
+    filterQuery["features.specialSkills"] = new RegExp(escapeRegex(skill), "i");
+  }
+
+  // Client worked with
+  if (client) {
+    filterQuery["portfolio.clients"] = new RegExp(escapeRegex(client), "i");
+  }
+
+  // ============================================
+  // RANGE FILTERS
+  // ============================================
+
+  // Height range
+  if (minHeight || maxHeight) {
+    filterQuery["stats.height.cm"] = {};
+    if (minHeight)
+      filterQuery["stats.height.cm"].$gte = parseInt(minHeight, 10);
+    if (maxHeight)
+      filterQuery["stats.height.cm"].$lte = parseInt(maxHeight, 10);
+  }
+
+  // Age range
+  if (minAge || maxAge) {
+    filterQuery.age = {};
+    if (minAge) filterQuery.age.$gte = parseInt(minAge, 10);
+    if (maxAge) filterQuery.age.$lte = parseInt(maxAge, 10);
+  }
+
+  // ============================================
+  // EXECUTE QUERY
+  // ============================================
+  const [models, count] = await Promise.all([
+    Model.find(filterQuery)
+      .sort(sort)
+      .limit(parseInt(limit, 10))
+      .skip((parseInt(page, 10) - 1) * parseInt(limit, 10)),
+    Model.countDocuments(filterQuery),
+  ]);
+
+  new ApiResponse(true, "Models fetched successfully", models, 200, {
+    count: models.length,
+    totalPages: Math.ceil(count / limit),
+    currentPage: parseInt(page, 10),
+    total: count,
+  }).send(res);
+});
 
 // ============================================
-// GET MODELS BY DIVISION AND CATEGORY
+// SEARCH MODELS (Dedicated Search Endpoint)
 // ============================================
-exports.getModelsByDivisionAndCategory = async (req, res) => {
-  try {
-    const { division, category } = req.params;
-    const { page = 1, limit = 20, sort = "-createdAt" } = req.query;
+exports.searchModels = asyncHandler(async (req, res) => {
+  const {
+    q, // Search query (required)
+    page = 1,
+    limit = 20,
+    sort = "-createdAt",
+    division,
+    category,
+    gender,
+  } = req.query;
 
-    const models = await Model.find({
-      division,
-      categories: category,
-      status: "active",
-    })
-      .select("firstName lastName slug division categories photos stats")
-      .sort(sort)
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const count = await Model.countDocuments({
-      division,
-      categories: category,
-      status: "active",
-    });
-
-    res.json({
-      success: true,
-      division,
-      category,
-      count: models.length,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      total: count,
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch models",
-      error: error.message,
-    });
+  // Validation
+  if (!q || q.trim() === "") {
+    return new ApiResponse(
+      false,
+      "Search query 'q' is required",
+      null,
+      400,
+    ).send(res);
   }
-};
+
+  const searchRegex = new RegExp(escapeRegex(q.trim()), "i");
+
+  // Build filter
+  let filterQuery = {
+    status: "active",
+    $or: [
+      { firstName: searchRegex },
+      { lastName: searchRegex },
+      { slug: searchRegex },
+      { ethnicity: searchRegex },
+      { "location.based": searchRegex },
+      { "location.available": searchRegex },
+      { "portfolio.clients": searchRegex },
+      { "portfolio.editorials": searchRegex },
+      { "portfolio.campaigns": searchRegex },
+      { "features.specialSkills": searchRegex },
+      { keywords: searchRegex },
+      { metaTitle: searchRegex },
+      { metaDescription: searchRegex },
+      { "stats.hairColor": searchRegex },
+      { "stats.eyeColor": searchRegex },
+    ],
+  };
+
+  // Additional filters
+  if (division) filterQuery.division = division;
+  if (category) filterQuery.categories = category;
+  if (gender) filterQuery.gender = gender;
+
+  // Execute query
+  const [models, count] = await Promise.all([
+    Model.find(filterQuery)
+      .sort(sort)
+      .limit(parseInt(limit, 10))
+      .skip((parseInt(page, 10) - 1) * parseInt(limit, 10)),
+    Model.countDocuments(filterQuery),
+  ]);
+
+  new ApiResponse(true, `Found ${count} results for "${q}"`, models, 200, {
+    query: q,
+    count: models.length,
+    totalPages: Math.ceil(count / limit),
+    currentPage: parseInt(page, 10),
+    total: count,
+  }).send(res);
+});
 
 // ============================================
 // GET SINGLE MODEL BY SLUG
 // ============================================
-exports.getModelBySlug = async (req, res) => {
-  try {
-    const { slug } = req.params;
+exports.getModelBySlug = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
 
-    const model = await Model.findOne({ slug, status: "active" });
+  const model = await Model.findOne({ slug, status: "active" });
 
-    if (!model) {
-      return res.status(404).json({
-        success: false,
-        message: "Model not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      data: model,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch model",
-      error: error.message,
-    });
+  if (!model) {
+    return new ApiResponse(false, "Model not found", null, 404).send(res);
   }
-};
+
+  new ApiResponse(true, "Model fetched successfully", model).send(res);
+});
 
 // ============================================
-// GET FEATURED MODELS
+// CREATE MODEL
 // ============================================
-exports.getFeaturedModels = async (req, res) => {
-  try {
-    const { limit = 10 } = req.query;
+exports.createModel = asyncHandler(async (req, res) => {
+  const { firstName, lastName, division, categories } = req.body;
 
-    const models = await Model.find({
-      status: "active",
-      isFeatured: true,
-    })
-      // .select(
-      //   "firstName lastName slug division categories photos stats isFeatured",
-      // )
-      .sort("-createdAt")
-      .limit(limit * 1);
-
-    res.json({
-      success: true,
-      count: models.length,
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch featured models",
-      error: error.message,
-    });
+  // Validation
+  if (!firstName || !lastName || !division || !categories) {
+    return new ApiResponse(
+      false,
+      "firstName, lastName, division, and categories are required",
+      null,
+      400,
+    ).send(res);
   }
-};
 
-// ============================================
-// GET NEW FACES
-// ============================================
-exports.getNewFaces = async (req, res) => {
-  try {
-    const { limit = 20, page = 1 } = req.query;
-
-    const models = await Model.find({
-      status: "active",
-      $or: [
-        { isNewFace: true },
-        { division: "newFaces" },
-        { categories: "new-faces" },
-      ],
-    })
-      .sort("-createdAt")
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const count = await Model.countDocuments({
-      status: "active",
-      $or: [
-        { isNewFace: true },
-        { division: "newFaces" },
-        { categories: "new-faces" },
-      ],
-    });
-
-    res.json({
-      success: true,
-      count: models.length,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      total: count,
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch new faces",
-      error: error.message,
-    });
+  // Auto-generate slug
+  let slug = req.body.slug;
+  if (!slug) {
+    slug = `${firstName}-${lastName}`
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
-};
 
-// ============================================
-// SEARCH MODELS
-// ============================================
-exports.searchModels = async (req, res) => {
-  try {
-    const {
-      query,
-      division,
-      category,
-      gender,
-      minHeight,
-      maxHeight,
-      hairColor,
-      eyeColor,
-      page = 1,
-      limit = 20,
-    } = req.query;
-
-    let searchQuery = { status: "active" };
-
-    // Text search on name
-    if (query) {
-      searchQuery.$or = [
-        { firstName: new RegExp(query, "i") },
-        { lastName: new RegExp(query, "i") },
-      ];
-    }
-
-    // Filter by division
-    if (division) {
-      searchQuery.division = division;
-    }
-
-    // Filter by category
-    if (category) {
-      searchQuery.categories = category;
-    }
-
-    // Filter by gender
-    if (gender) {
-      searchQuery.gender = gender;
-    }
-
-    // Filter by hair color
-    if (hairColor) {
-      searchQuery["stats.hairColor"] = new RegExp(hairColor, "i");
-    }
-
-    // Filter by eye color
-    if (eyeColor) {
-      searchQuery["stats.eyeColor"] = new RegExp(eyeColor, "i");
-    }
-
-    // Height range filter
-    if (minHeight || maxHeight) {
-      searchQuery["stats.height.cm"] = {};
-      if (minHeight) searchQuery["stats.height.cm"].$gte = parseInt(minHeight);
-      if (maxHeight) searchQuery["stats.height.cm"].$lte = parseInt(maxHeight);
-    }
-
-    const models = await Model.find(searchQuery)
-      .select("firstName lastName slug division categories photos stats")
-      .sort("-createdAt")
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const count = await Model.countDocuments(searchQuery);
-
-    res.json({
-      success: true,
-      count: models.length,
-      totalPages: Math.ceil(count / limit),
-      currentPage: parseInt(page),
-      total: count,
-      filters: {
-        query,
-        division,
-        category,
-        gender,
-        minHeight,
-        maxHeight,
-        hairColor,
-        eyeColor,
-      },
-      data: models,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Search failed",
-      error: error.message,
-    });
+  // Check if slug exists
+  const existingModel = await Model.findOne({ slug });
+  if (existingModel) {
+    return new ApiResponse(
+      false,
+      `Model with slug "${slug}" already exists`,
+      null,
+      400,
+    ).send(res);
   }
-};
 
-// controllers/modelController.js
+  // Create model
+  const model = await Model.create({
+    ...req.body,
+    slug,
+    status: "active",
+  });
 
-// ... (keep all your existing GET functions above) ...
+  new ApiResponse(true, "Model created successfully", model, 201).send(res);
+});
 
 // ============================================
-// CREATE MODEL (Protected)
+// UPDATE MODEL
 // ============================================
-// POST /api/models/admin
-exports.createModel = async (req, res) => {
-  try {
-    const {
-      firstName,
-      lastName,
-      division,
-      categories,
-      gender,
-      dateOfBirth,
-      age,
-      ethnicity,
-      stats,
-      photos,
-      videos,
-      experience,
-      portfolio,
-      social,
-      metrics,
-      location,
-      features,
-      card,
-      isFeatured,
-      isNewFace,
-      metaTitle,
-      metaDescription,
-      keywords,
-    } = req.body;
+exports.updateModel = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    // Validation
-    if (!firstName || !lastName || !division || !categories) {
-      return res.status(400).json({
-        success: false,
-        message: "firstName, lastName, division, and categories are required",
-      });
-    }
-
-    // Auto-generate slug
-    let slug = req.body.slug;
-    if (!slug) {
-      slug = `${firstName}-${lastName}`
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-    }
-
-    // Check if slug exists
-    const existingModel = await Model.findOne({ slug });
-    if (existingModel) {
-      return res.status(400).json({
-        success: false,
-        message: `Model with slug "${slug}" already exists`,
-      });
-    }
-
-    // Create model
-    const model = await Model.create({
-      firstName,
-      lastName,
-      slug,
-      division,
-      categories,
-      gender,
-      dateOfBirth,
-      age,
-      ethnicity,
-      stats: stats || {},
-      photos: photos || [],
-      videos: videos || [],
-      experience,
-      portfolio: portfolio || {},
-      social: social || {},
-      metrics: metrics || {},
-      location: location || {},
-      features: features || {},
-      card: card || {},
-      isFeatured: isFeatured || false,
-      isNewFace: isNewFace || false,
-      metaTitle,
-      metaDescription,
-      keywords: keywords || [],
-      status: "active",
+  // Check slug uniqueness
+  if (req.body.slug) {
+    const existing = await Model.findOne({
+      slug: req.body.slug,
+      _id: { $ne: id },
     });
-
-    res.status(201).json({
-      success: true,
-      message: "Model created successfully",
-      data: model,
-    });
-  } catch (error) {
-    console.error("Create model error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create model",
-      error: error.message,
-    });
+    if (existing) {
+      return new ApiResponse(
+        false,
+        "Slug already taken by another model",
+        null,
+        400,
+      ).send(res);
+    }
   }
-};
 
-// ============================================
-// UPDATE MODEL (Protected)
-// ============================================
-// PUT /api/models/admin/:id
-exports.updateModel = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
+  const model = await Model.findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
+  });
 
-    // If slug is being updated, check uniqueness
-    if (updateData.slug) {
-      const existing = await Model.findOne({
-        slug: updateData.slug,
-        _id: { $ne: id },
-      });
-      if (existing) {
-        return res.status(400).json({
-          success: false,
-          message: "Slug already taken by another model",
-        });
-      }
-    }
-
-    const model = await Model.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!model) {
-      return res.status(404).json({
-        success: false,
-        message: "Model not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Model updated successfully",
-      data: model,
-    });
-  } catch (error) {
-    console.error("Update model error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update model",
-      error: error.message,
-    });
+  if (!model) {
+    return new ApiResponse(false, "Model not found", null, 404).send(res);
   }
-};
+
+  new ApiResponse(true, "Model updated successfully", model).send(res);
+});
 
 // ============================================
-// DELETE MODEL (Protected)
+// DELETE MODEL
 // ============================================
-// DELETE /api/models/admin/:id
-exports.deleteModel = async (req, res) => {
-  try {
-    const { id } = req.params;
+exports.deleteModel = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    const model = await Model.findByIdAndDelete(id);
+  const model = await Model.findByIdAndDelete(id);
 
-    if (!model) {
-      return res.status(404).json({
-        success: false,
-        message: "Model not found",
-      });
-    }
-
-    // Optional: Delete photos from Cloudinary here if needed
-    // await deleteImagesFromCloudinary(model.photos);
-
-    res.json({
-      success: true,
-      message: "Model deleted successfully",
-      data: null,
-    });
-  } catch (error) {
-    console.error("Delete model error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete model",
-      error: error.message,
-    });
+  if (!model) {
+    return new ApiResponse(false, "Model not found", null, 404).send(res);
   }
-};
+
+  new ApiResponse(true, "Model deleted successfully").send(res);
+});
