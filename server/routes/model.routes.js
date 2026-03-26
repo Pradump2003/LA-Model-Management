@@ -21,42 +21,11 @@ const { protect } = require("../middlewares/auth.middleware");
 // ============================================
 
 // Get all active models
-// GET /api/models
 router.get("/", getAllModels);
 
 router.get("/search", searchModels); // Dedicated search endpoint
 
 router.get("/:slug", getModelBySlug);
-
-// // Get featured models
-// // GET /api/models/featured
-// router.get("/featured", getFeaturedModels);
-
-// // Get new faces
-// // GET /api/models/new-faces
-// router.get("/new-faces", getNewFaces);
-
-// // Search models
-// // GET /api/models/search
-// router.get("/search", searchModels);
-
-// // Get models by division
-// // GET /api/models/division/:division
-// router.get("/division/:division", getModelsByDivision);
-
-// // Get models by category
-// // GET /api/models/category/:category
-// router.get("/category/:category", getModelsByCategory);
-
-// // Get models by division AND category
-// // GET /api/models/division/:division/category/:category
-// router.get(
-//   "/division/:division/category/:category",
-//   getModelsByDivisionAndCategory,
-// );
-
-// Get single model by slug (MUST BE LAST)
-// GET /api/models/:slug
 
 router.post("/", protect, createModel);
 

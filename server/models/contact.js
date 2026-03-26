@@ -78,4 +78,5 @@ const contactSchema = new mongoose.Schema(
 contactSchema.index({ status: 1, createdAt: -1 });
 contactSchema.index({ email: 1 });
 
-module.exports = mongoose.model("Contact", contactSchema);
+module.exports =
+  mongoose.models.Contact || mongoose.model("Contact", contactSchema);

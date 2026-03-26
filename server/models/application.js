@@ -332,4 +332,6 @@ applicationSchema.virtual("age").get(function () {
   return Math.floor((new Date() - new Date(this.dateOfBirth)) / 31557600000);
 });
 
-module.exports = mongoose.model("Application", applicationSchema);
+module.exports =
+  mongoose.models.Application ||
+  mongoose.model("Application", applicationSchema);

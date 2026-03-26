@@ -4,6 +4,8 @@ const connectDB = require("./config/database.config");
 const cors = require("cors");
 const modelRoutes = require("./routes/model.routes");
 const uploadRoutes = require("./routes/upload.routes")
+const contactRoutes = require("./routes/contact.routes");
+const applicationRoutes = require("./routes/application.routes");
 
 const app = express();
 
@@ -15,6 +17,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/models", modelRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/contacts", contactRoutes);
+app.use("/api/applications", applicationRoutes);
+
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
