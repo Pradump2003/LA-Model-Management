@@ -1,6 +1,7 @@
 // controllers/applicationController.js
 const asyncHandler = require("express-async-handler");
 const Application = require("../models/application");
+const Model = require("../models/model");
 const ApiResponse = require("../utils/ApiResponse.utils");
 const {
   sendApplicationToAdmin,
@@ -344,7 +345,7 @@ exports.updateApplicationStatus = asyncHandler(async (req, res) => {
 
   const updateData = {
     status,
-    reviewedBy: req.user._id,
+    reviewedBy: "admin",
     reviewedAt: new Date(),
   };
 
@@ -377,7 +378,7 @@ exports.addAdminNote = asyncHandler(async (req, res) => {
       $push: {
         adminNotes: {
           note,
-          addedBy: req.user._id,
+          addedBy: "admin",
           addedAt: new Date(),
         },
       },
@@ -435,7 +436,7 @@ exports.addInternalRating = asyncHandler(async (req, res) => {
         potential: parseInt(potential, 10),
         marketability: parseInt(marketability, 10),
         overall,
-        ratedBy: req.user._id,
+        ratedBy: "admin",
       },
     },
     { new: true },
@@ -481,7 +482,7 @@ exports.addCommunication = asyncHandler(async (req, res) => {
           type,
           subject,
           message,
-          sentBy: req.user._id,
+          sentBy: "admin",
           sentAt: new Date(),
         },
       },
@@ -501,29 +502,182 @@ exports.addCommunication = asyncHandler(async (req, res) => {
 // ============================================
 // LINK APPLICATION TO MODEL (Protected)
 // ============================================
-exports.linkToModel = asyncHandler(async (req, res) => {
-  const { modelId } = req.body;
+// controllers/application.controller.js
 
-  if (!modelId) {
-    return new ApiResponse(false, "modelId is required", null, 400).send(res);
-  }
+// controllers/application.controller.js
 
-  const application = await Application.findByIdAndUpdate(
-    req.params.id,
-    {
-      modelId,
-      status: "signed",
-      reviewedBy: req.user._id,
-      reviewedAt: new Date(),
-    },
-    { new: true },
-  ).populate("modelId", "firstName lastName slug");
+exports.convertToModel = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const application = await Application.findById(id);
 
   if (!application) {
     return new ApiResponse(false, "Application not found", null, 404).send(res);
   }
 
-  new ApiResponse(true, "Application linked to model", application).send(res);
+  if (application.modelId) {
+    return new ApiResponse(
+      false,
+      "Application already converted to model",
+      null,
+      400,
+    ).send(res);
+  }
+
+  let slug = `${application.firstName}-${application.lastName}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  let slugExists = await Model.findOne({ slug });
+  let counter = 1;
+  const originalSlug = slug;
+
+  while (slugExists) {
+    slug = `${originalSlug}-${counter}`;
+    slugExists = await Model.findOne({ slug });
+    counter++;
+  }
+
+  const age = application.dateOfBirth
+    ? Math.floor((new Date() - new Date(application.dateOfBirth)) / 31557600000)
+    : null;
+
+  // ✅ Map Application experience to Model experience enum
+  let experienceLevel = "new-face"; // Default
+
+  if (application.experience?.level === "professional") {
+    experienceLevel = "established";
+  } else if (application.experience?.level === "some-experience") {
+    experienceLevel = "experienced";
+  } else {
+    experienceLevel = "new-face";
+  }
+
+  const newModel = await Model.create({
+    firstName: application.firstName,
+    lastName: application.lastName,
+    slug: slug,
+
+    division: application.applyingFor?.division || "newFaces",
+    categories: application.applyingFor?.categories || ["new-faces"],
+
+    gender: application.gender,
+    dateOfBirth: application.dateOfBirth,
+    age: age,
+    ethnicity: application.ethnicity,
+
+    stats: {
+      height: {
+        feet:
+          application.stats?.height?.feet && application.stats?.height?.inches
+            ? `${application.stats.height.feet}'${application.stats.height.inches}"`
+            : undefined,
+        cm: application.stats?.height?.cm,
+      },
+      bust: application.stats?.bust,
+      waist: application.stats?.waist,
+      hips: application.stats?.hips,
+      dress: application.stats?.dress,
+      shoe: application.stats?.shoe,
+      chest: application.stats?.chest,
+      suit: application.stats?.suit,
+      insideLeg: application.stats?.neck,
+      sleeve: application.stats?.sleeve,
+      inseam: application.stats?.inseam,
+      hairColor: application.stats?.hairColor,
+      eyeColor: application.stats?.eyeColor,
+      weight: application.stats?.weight?.lbs
+        ? `${application.stats.weight.lbs} lbs`
+        : undefined,
+    },
+
+    photos:
+      application.photos?.map((photo, index) => ({
+        url: photo.url,
+        publicId: photo.publicId,
+        isPrimary: index === 0,
+        category: "portfolio",
+        order: index,
+      })) || [],
+
+    videos: application.introVideo?.url
+      ? [
+          {
+            url: application.introVideo.url,
+            publicId: application.introVideo.publicId,
+            thumbnail: application.introVideo.thumbnail,
+            title: "Introduction Video",
+            order: 0,
+          },
+        ]
+      : [],
+
+    experience: experienceLevel, // ✅ Now uses correct enum values
+
+    portfolio: {
+      clients: application.experience?.portfolio?.clients || [],
+      editorials: application.experience?.portfolio?.editorials || [],
+      campaigns: application.experience?.portfolio?.campaigns || [],
+      runwayShows: [],
+      awards: [],
+    },
+
+    social: {
+      instagram: application.social?.instagram || "",
+      tiktok: application.social?.tiktok || "",
+      twitter: application.social?.twitter || "",
+      youtube: application.social?.youtube || "",
+      website: "",
+    },
+
+    metrics: {
+      instagramFollowers: application.social?.followers?.instagram || 0,
+      tiktokFollowers: application.social?.followers?.tiktok || 0,
+      engagementRate: 0,
+    },
+
+    location: {
+      based: application.location?.city || "",
+      available: [application.location?.city].filter(Boolean),
+    },
+
+    features: {
+      tattoos: false,
+      piercings: false,
+      specialSkills: [
+        ...(application.skills?.sports || []),
+        ...(application.skills?.other || []),
+      ],
+    },
+
+    status: "active",
+    isFeatured: false,
+    isNewFace: true,
+
+    metaTitle: `${application.firstName} ${application.lastName} - Model`,
+    metaDescription: `Professional model ${application.firstName} ${application.lastName}`,
+    keywords: [
+      application.firstName,
+      application.lastName,
+      application.applyingFor?.division,
+      "model",
+    ].filter(Boolean),
+  });
+
+  await Application.findByIdAndUpdate(id, {
+    modelId: newModel._id,
+    status: "signed",
+    reviewedBy: req.user?._id || "admin",
+    reviewedAt: new Date(),
+  });
+
+  new ApiResponse(
+    true,
+    "Application converted to model successfully",
+    newModel,
+    201,
+  ).send(res);
 });
 
 // ============================================

@@ -3,13 +3,9 @@ const express = require("express");
 const router = express.Router();
 const {
   getAllModels,
-  getModelsByDivision,
-  getModelsByCategory,
-  getModelsByDivisionAndCategory,
   getModelBySlug,
   searchModels,
-  getFeaturedModels,
-  getNewFaces,
+  getModelById,
   createModel,
   updateModel,
   deleteModel,
@@ -22,6 +18,7 @@ const { protect } = require("../middlewares/auth.middleware");
 
 // Get all active models
 router.get("/", getAllModels);
+router.get("/:id", getModelById);
 
 router.get("/search", searchModels); // Dedicated search endpoint
 

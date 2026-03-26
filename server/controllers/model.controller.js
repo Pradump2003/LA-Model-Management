@@ -149,6 +149,26 @@ exports.getAllModels = asyncHandler(async (req, res) => {
   }).send(res);
 });
 
+// controllers/model.controller.js
+
+exports.getModelById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Validate MongoDB ObjectId format
+  const mongoose = require('mongoose');
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return new ApiResponse(false, "Invalid model ID format", null, 400).send(res);
+  }
+
+  const model = await Model.findById(id);
+
+  if (!model) {
+    return new ApiResponse(false, "Model not found", null, 404).send(res);
+  }
+
+  new ApiResponse(true, "Model fetched successfully", model).send(res);
+});
+
 // ============================================
 // SEARCH MODELS (Dedicated Search Endpoint)
 // ============================================

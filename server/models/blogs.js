@@ -143,24 +143,23 @@ blogSchema.virtual("formattedDate").get(function () {
 });
 
 // Calculate reading time based on content
-blogSchema.pre("save", function (next) {
+// ✅ Fix 1: Calculate reading time
+blogSchema.pre("save", async function () {
   if (this.content) {
     const wordsPerMinute = 200;
     const wordCount = this.content.split(/\s+/).length;
     this.readingTime = Math.ceil(wordCount / wordsPerMinute);
   }
-  next();
 });
 
-// Auto-generate slug from title if not provided
-blogSchema.pre("save", function (next) {
+// ✅ Fix 2: Auto-generate slug
+blogSchema.pre("save", async function () {
   if (!this.slug && this.title) {
     this.slug = this.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
   }
-  next();
 });
 
 module.exports = mongoose.model("Blog", blogSchema);

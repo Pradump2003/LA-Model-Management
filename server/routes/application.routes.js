@@ -11,11 +11,11 @@ const {
   addAdminNote,
   addInternalRating,
   addCommunication,
-  linkToModel,
   deleteApplication,
   deleteMultipleApplications,
   getNewApplicationsCount,
   getApplicationStats,
+  convertToModel,
 } = require("../controllers/application.controller");
 
 // Public
@@ -31,7 +31,7 @@ router.patch("/:id/status", protect, updateApplicationStatus);
 router.post("/:id/notes", protect, addAdminNote);
 router.post("/:id/rating", protect, addInternalRating);
 router.post("/:id/communications", protect, addCommunication);
-router.patch("/:id/link-model", protect, linkToModel);
+router.post("/:id/convert-to-model", protect, convertToModel);
 router.delete("/:id", protect, deleteApplication);
 
 module.exports = router;

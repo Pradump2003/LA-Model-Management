@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 
 const applicationSchema = new mongoose.Schema(
   {
-    // Personal Information
     firstName: {
       type: String,
       required: true,
@@ -35,7 +34,6 @@ const applicationSchema = new mongoose.Schema(
     },
     ethnicity: String,
 
-    // Applying for which division - YOUR SPECIFIC STRUCTURE
     applyingFor: {
       division: {
         type: String,
@@ -65,7 +63,6 @@ const applicationSchema = new mongoose.Schema(
       ],
     },
 
-    // Physical Stats
     stats: {
       height: {
         feet: String,
@@ -76,24 +73,20 @@ const applicationSchema = new mongoose.Schema(
         lbs: Number,
         kg: Number,
       },
-      // For Women/Girls
       bust: String,
       waist: String,
       hips: String,
       dress: String,
       shoe: String,
-      // For Men/Boys
       chest: String,
       suit: String,
       neck: String,
       sleeve: String,
       inseam: String,
-      // Common
       hairColor: String,
       eyeColor: String,
     },
 
-    // Location
     location: {
       street: String,
       city: {
@@ -111,7 +104,6 @@ const applicationSchema = new mongoose.Schema(
       },
     },
 
-    // Parent/Guardian (if under 18 - especially for juniors division)
     parent: {
       required: Boolean,
       name: String,
@@ -120,7 +112,6 @@ const applicationSchema = new mongoose.Schema(
       email: String,
     },
 
-    // Experience & Background
     experience: {
       level: {
         type: String,
@@ -139,7 +130,6 @@ const applicationSchema = new mongoose.Schema(
       },
     },
 
-    // Special Skills
     skills: {
       acting: Boolean,
       dancing: Boolean,
@@ -150,7 +140,6 @@ const applicationSchema = new mongoose.Schema(
       other: [String],
     },
 
-    // Social Media
     social: {
       instagram: String,
       tiktok: String,
@@ -163,7 +152,6 @@ const applicationSchema = new mongoose.Schema(
       },
     },
 
-    // Photos - Required uploads
     photos: [
       {
         url: String,
@@ -182,7 +170,6 @@ const applicationSchema = new mongoose.Schema(
             "polaroid",
             "other",
           ],
-          required: true,
         },
         uploadedAt: {
           type: Date,
@@ -191,14 +178,12 @@ const applicationSchema = new mongoose.Schema(
       },
     ],
 
-    // Video introduction (optional)
     introVideo: {
       url: String,
       publicId: String,
       thumbnail: String,
     },
 
-    // Additional Information
     additionalInfo: {
       howDidYouHear: {
         type: String,
@@ -214,7 +199,6 @@ const applicationSchema = new mongoose.Schema(
       legalToWork: Boolean,
     },
 
-    // Consent & Agreements
     agreements: {
       termsAccepted: {
         type: Boolean,
@@ -232,7 +216,6 @@ const applicationSchema = new mongoose.Schema(
       acceptedAt: Date,
     },
 
-    // Application Status & Tracking
     status: {
       type: String,
       enum: [
@@ -249,14 +232,11 @@ const applicationSchema = new mongoose.Schema(
       default: "submitted",
     },
 
-    // Admin Notes & Reviews
+    // ✅ FIXED: Changed from ref: "Admin" to simple String
     adminNotes: [
       {
         note: String,
-        addedBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Admin",
-        },
+        addedBy: String,
         addedAt: {
           type: Date,
           default: Date.now,
@@ -264,32 +244,26 @@ const applicationSchema = new mongoose.Schema(
       },
     ],
 
-    // Rating/Scoring (internal)
+    // ✅ FIXED: Changed from ref: "Admin" to simple String
     internalRating: {
       looks: Number,
       potential: Number,
       marketability: Number,
       overall: Number,
-      ratedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Admin",
-      },
+      ratedBy: String,
     },
 
-    // Review tracking
-    reviewedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
-    },
+    // ✅ FIXED: Changed from ref: "Admin" to simple String
+    reviewedBy: String,
     reviewedAt: Date,
 
-    // If approved, link to created model
+    // ✅ This stays (Model exists)
     modelId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Model",
     },
 
-    // Communication history
+    // ✅ FIXED: Changed from ref: "Admin" to simple String
     communications: [
       {
         type: {
@@ -298,10 +272,7 @@ const applicationSchema = new mongoose.Schema(
         },
         subject: String,
         message: String,
-        sentBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Admin",
-        },
+        sentBy: String,
         sentAt: {
           type: Date,
           default: Date.now,
@@ -309,7 +280,6 @@ const applicationSchema = new mongoose.Schema(
       },
     ],
 
-    // IP & Device info
     submission: {
       ipAddress: String,
       userAgent: String,
