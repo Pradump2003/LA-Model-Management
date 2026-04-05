@@ -255,12 +255,14 @@ const sendApplicationToAdmin = async (application) => {
                 <tr><td>Chest</td><td>${get(application, "stats.chest")}</td></tr>
                 <tr><td>Waist</td><td>${get(application, "stats.waist")}</td></tr>
                 <tr><td>Suit</td><td>${get(application, "stats.suit")}</td></tr>
+                <tr><td>Shirt</td><td>${get(application, "stats.shirt")}</td></tr>
                 <tr><td>Neck</td><td>${get(application, "stats.neck")}</td></tr>
                 <tr><td>Sleeve</td><td>${get(application, "stats.sleeve")}</td></tr>
                 <tr><td>Inseam</td><td>${get(application, "stats.inseam")}</td></tr>
               `
                   : `
                 <tr><td>Bust</td><td>${get(application, "stats.bust")}</td></tr>
+                <tr><td>Cup</td><td>${get(application, "stats.cup")}</td></tr>
                 <tr><td>Waist</td><td>${get(application, "stats.waist")}</td></tr>
                 <tr><td>Hips</td><td>${get(application, "stats.hips")}</td></tr>
                 <tr><td>Dress</td><td>${get(application, "stats.dress")}</td></tr>

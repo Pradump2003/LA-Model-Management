@@ -71,6 +71,7 @@ const modelSchema = new mongoose.Schema(
 
       // For Women
       bust: String, // e.g., "34"
+      cup: String, // e.g., "B"
       waist: String, // e.g., "24"
       hips: String, // e.g., "35"
       dress: String, // e.g., "2-4"
@@ -79,6 +80,7 @@ const modelSchema = new mongoose.Schema(
       // For Men
       chest: String, // e.g., "40"
       suit: String, // e.g., "40R"
+      shirt: String, // e.g., "15.5"
       insideLeg: String, // e.g., "15.5"
       sleeve: String, // e.g., "34"
       inseam: String, // e.g., "32"

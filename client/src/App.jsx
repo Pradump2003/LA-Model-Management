@@ -1,121 +1,68 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/common/Navbar";
+import Footer from "./components/common/Footer";
+
+// Pages
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import BecomeModel from "./pages/BecomeModel";
+
+// Blog Pages (you already have these)
+import Blogs from "./pages/Blogs"; // Same as News
+import BlogDetail from "./pages/BlogDetail"; // Same as NewsDetail
+
+// Model Pages
+import AllModels from "./pages/models/AllModels";
+import Women from "./pages/models/Women";
+import Men from "./pages/models/Men";
+import NewFaces from "./pages/models/NewFaces";
+import Direct from "./pages/models/Direct";
+import SpecialBooking from "./pages/models/SpecialBooking";
+import Juniors from "./pages/models/Juniors";
+import ModelDetail from "./pages/models/ModelDetail";
+import ApplicationSuccess from "./pages/ApplicationSuccess";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Router>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
 
-      <div className="ticks"></div>
+            {/* Blog/News Routes */}
+            <Route path="/news" element={<Blogs />} />
+            <Route path="/news/:slug" element={<BlogDetail />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            <Route path="/contact" element={<Contact />} />
+            <Route
+              path="/application-success"
+              element={<ApplicationSuccess />}
+            />
+            <Route path="/apply" element={<BecomeModel />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            {/* Model Routes */}
+            <Route path="/models" element={<AllModels />} />
+            <Route path="/models/women" element={<Women />} />
+            <Route path="/models/men" element={<Men />} />
+            <Route path="/models/new-faces" element={<NewFaces />} />
+            <Route path="/models/direct" element={<Direct />} />
+            <Route
+              path="/models/special-booking"
+              element={<SpecialBooking />}
+            />
+            <Route path="/models/juniors" element={<Juniors />} />
+            <Route path="/model/:slug" element={<ModelDetail />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
