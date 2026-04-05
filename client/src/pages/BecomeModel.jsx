@@ -19,6 +19,221 @@ import * as flags from "country-flag-icons/react/3x2";
 
 const euroMetricHeights = Array.from({ length: 71 }, (_, i) => 130 + i); // 130 to 200 cm
 
+const suitNumbers = {
+  "usa-can": Array.from({ length: 21 }, (_, i) => 34 + i), // 34 to 54
+  "euro-metric": Array.from({ length: 21 }, (_, i) => 35 + i), // 35 to 55
+};
+
+const suitFits = ["S", "R", "R/L", "L", "T"];
+
+const dressOptions = {
+  "usa-can": [
+    "0",
+    "0 - 2",
+    "2",
+    "2 - 4",
+    "4",
+    "4 - 6",
+    "6",
+    "6 - 8",
+    "8",
+    "8 - 10",
+    "10",
+    "10 - 12",
+    "12",
+    "12 - 14",
+    "14",
+    "14 - 16",
+    "16",
+    "16 - 18",
+    "18",
+    "18 - 20",
+    "20",
+    "20 - 22",
+    "22",
+    "22 - 24",
+    "24",
+    "24 - 26",
+    "26",
+    "26 - 28",
+    "28",
+    "28 - 30",
+    "30",
+  ],
+  "euro-metric": [
+    "30",
+    "30 - 32",
+    "32",
+    "32 - 34",
+    "34",
+    "34 - 36",
+    "36",
+    "36 - 38",
+    "38",
+    "38 - 40",
+    "40",
+    "40 - 42",
+    "42",
+    "42 - 44",
+    "44",
+    "44 - 46",
+    "46",
+    "46 - 48",
+    "48",
+    "48 - 50",
+    "50",
+    "50 - 52",
+    "52",
+    "52 - 54",
+    "54",
+    "54 - 56",
+    "56",
+    "56 - 58",
+    "58",
+    "58 - 60",
+    "60",
+  ],
+};
+
+const cupOptions = {
+  "usa-can": [
+    "AA",
+    "A",
+    "A/B",
+    "B",
+    "B/C",
+    "C",
+    "C/D",
+    "D",
+    "DD",
+    "E",
+    "E/F",
+    "F",
+    "FF",
+    "G",
+    "G/GG",
+    "GG/H",
+    "H",
+    "HH",
+    "J",
+  ],
+  "euro-metric": [
+    "AA",
+    "A",
+    "A/B",
+    "B",
+    "B/C",
+    "C",
+    "C/D",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+  ],
+};
+
+const shoeOptions = {
+  "euro-metric": [
+    "34-35",
+    "35",
+    "35-36",
+    "36",
+    "36-37",
+    "37",
+    "37-38",
+    "38",
+    "38-39",
+    "39",
+    "39-40",
+    "40",
+    "40-41",
+    "41",
+    "41-42",
+    "42",
+    "42-43",
+    "43",
+    "43-44",
+    "44",
+    "44-45",
+    "45",
+    "45-46",
+    "46",
+  ],
+  "usa-can": [
+    "4.5",
+    "5",
+    "5.5",
+    "6",
+    "6.5",
+    "7",
+    "7.5",
+    "8",
+    "8.5",
+    "9",
+    "9.5",
+    "10",
+    "10.5",
+    "11",
+    "11.5",
+    "12",
+    "12.5",
+    "13",
+  ],
+};
+
+const eyeOptions = [
+  "Blue",
+  "Blue - Green",
+  "Blue - Grey",
+  "Black",
+  "Brown",
+  "Green",
+  "Grey",
+  "Hazel",
+  "Hazel - Green",
+  "Grey - Green",
+];
+
+const hairOptions = [
+  "Auburn",
+  "Blonde",
+  "Black",
+  "Brown",
+  "Grey",
+  "Red",
+  "Salt and Pepper",
+  "Shaved",
+  "White",
+  "Silver",
+  "Strawberry",
+];
+
+const quarterFractions = [
+  { label: "1/4", value: ".25" },
+  { label: "1/2", value: ".5" },
+  { label: "3/4", value: ".75" },
+];
+
+const usaCanFemaleMeasurementRanges = {
+  chest: Array.from({ length: 27 }, (_, i) => 25 + i), // 25 to 51
+  waist: Array.from({ length: 23 }, (_, i) => 20 + i), // 20 to 42
+  hips: Array.from({ length: 25 }, (_, i) => 30 + i), // 30 to 54
+};
+
+const euroMetricFemaleMeasurementRanges = {
+  chest: Array.from({ length: 37 }, (_, i) => 64 + i), // 64 to 100
+  waist: Array.from({ length: 31 }, (_, i) => 54 + i), // 54 to 84
+  hips: Array.from({ length: 33 }, (_, i) => 80 + i), // 80 to 112
+};
+
 const usaCanHeights = Array.from({ length: 41 }, (_, i) => {
   const totalInches = 55 + i; // 4'7 to 7'11 approx
   const feet = Math.floor(totalInches / 12);
@@ -56,6 +271,247 @@ const formatUsaCanHeight = (totalInches) => {
   )}'' )`;
 };
 
+const QuarterMeasurementPicker = ({ label, value, onSelect, options }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full rounded-md px-4 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+      >
+        <span
+          className={
+            value ? "text-gray-700" : "text-gray-400 uppercase tracking-wide"
+          }
+        >
+          {value || label}
+        </span>
+
+        <svg
+          className={`w-5 h-5 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-2 w-[330px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+          <div className="space-y-1.5">
+            {options.map((num) => (
+              <div
+                key={num}
+                className="grid grid-cols-[56px_14px_1fr] gap-2 items-center"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(String(num));
+                    setOpen(false);
+                  }}
+                  className="border border-gray-400 rounded-md px-2 py-1 text-sm min-w-[56px] leading-none hover:bg-gray-100"
+                >
+                  {num}
+                </button>
+
+                <div className="text-sm text-center">+</div>
+
+                <div className="flex gap-1 flex-nowrap overflow-x-auto">
+                  {quarterFractions.map((fraction) => (
+                    <button
+                      key={fraction.label}
+                      type="button"
+                      onClick={() => {
+                        onSelect(`${num}${fraction.value}`);
+                        setOpen(false);
+                      }}
+                      className="border border-gray-400 rounded-md px-2 py-1 text-xs min-w-[42px] whitespace-nowrap leading-none hover:bg-gray-100"
+                    >
+                      {fraction.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const HalfMeasurementPicker = ({ label, value, onSelect, options }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full rounded-md px-4 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+      >
+        <span
+          className={
+            value ? "text-gray-700" : "text-gray-400 uppercase tracking-wide"
+          }
+        >
+          {value || label}
+        </span>
+
+        <svg
+          className={`w-5 h-5 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-2 w-[220px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+          <div className="space-y-1.5">
+            {options.map((num) => (
+              <div
+                key={num}
+                className="grid grid-cols-[1fr_56px] gap-2 items-center"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(String(num));
+                    setOpen(false);
+                  }}
+                  className="border border-gray-400 rounded-md px-2 py-1 text-sm leading-none hover:bg-gray-100"
+                >
+                  {num}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(`${num}.5`);
+                    setOpen(false);
+                  }}
+                  className="border border-gray-400 rounded-md px-2 py-1 text-sm leading-none hover:bg-gray-100"
+                >
+                  0.5
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SimplePopupSelect = ({ label, value, options, onSelect }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-full rounded-md px-4 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+      >
+        <span
+          className={
+            value ? "text-gray-700" : "text-gray-400 uppercase tracking-wide"
+          }
+        >
+          {value || label}
+        </span>
+
+        <svg
+          className={`w-5 h-5 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-2 w-[300px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+          <div className="space-y-1.5">
+            {options.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => {
+                  onSelect(option);
+                  setOpen(false);
+                }}
+                className="w-full border border-gray-400 rounded-md px-3 py-1.5 text-sm text-left hover:bg-gray-100"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const BecomeModel = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -65,9 +521,19 @@ const BecomeModel = () => {
   const [uploadedVideo, setUploadedVideo] = useState(null);
   const [measurementSystem, setMeasurementSystem] = useState("usa-can");
   const [showHeightDropdown, setShowHeightDropdown] = useState(false);
+  const [showSuitDropdown, setShowSuitDropdown] = useState(false);
+  const [showDressDropdown, setShowDressDropdown] = useState(false);
+  const [showCupDropdown, setShowCupDropdown] = useState(false);
+  const [showShoeDropdown, setShowShoeDropdown] = useState(false);
   const [selectedHeightBase, setSelectedHeightBase] = useState(null);
   const [selectedFraction, setSelectedFraction] = useState(null);
+  const [selectedSuitNumber, setSelectedSuitNumber] = useState("");
+  const [selectedSuitFit, setSelectedSuitFit] = useState("");
   const heightDropdownRef = useRef(null);
+  const suitDropdownRef = useRef(null);
+  const dressDropdownRef = useRef(null);
+  const cupDropdownRef = useRef(null);
+  const shoeDropdownRef = useRef(null);
 
   const inchesToCm = (inches) => Math.round(inches * 2.54);
 
@@ -89,6 +555,21 @@ const BecomeModel = () => {
         },
       },
     }));
+  };
+
+  const handleSuitSelect = (number, fit) => {
+    setSelectedSuitNumber(number);
+    setSelectedSuitFit(fit);
+
+    setFormData((prev) => ({
+      ...prev,
+      stats: {
+        ...prev.stats,
+        suit: `${number} ${fit}`,
+      },
+    }));
+
+    setShowSuitDropdown(false);
   };
 
   const [formData, setFormData] = useState({
@@ -228,6 +709,34 @@ const BecomeModel = () => {
         !heightDropdownRef.current.contains(event.target)
       ) {
         setShowHeightDropdown(false);
+      }
+
+      if (
+        suitDropdownRef.current &&
+        !suitDropdownRef.current.contains(event.target)
+      ) {
+        setShowSuitDropdown(false);
+      }
+
+      if (
+        dressDropdownRef.current &&
+        !dressDropdownRef.current.contains(event.target)
+      ) {
+        setShowDressDropdown(false);
+      }
+
+      if (
+        cupDropdownRef.current &&
+        !cupDropdownRef.current.contains(event.target)
+      ) {
+        setShowCupDropdown(false);
+      }
+
+      if (
+        shoeDropdownRef.current &&
+        !shoeDropdownRef.current.contains(event.target)
+      ) {
+        setShowShoeDropdown(false);
       }
     };
 
@@ -973,8 +1482,14 @@ const BecomeModel = () => {
                             onChange={() => {
                               setMeasurementSystem("euro-metric");
                               setShowHeightDropdown(false);
+                              setShowSuitDropdown(false);
+                              setShowDressDropdown(false);
+                              setShowCupDropdown(false);
+                              setShowShoeDropdown(false);
                               setSelectedHeightBase(null);
                               setSelectedFraction(null);
+                              setSelectedSuitNumber("");
+                              setSelectedSuitFit("");
                               setFormData((prev) => ({
                                 ...prev,
                                 stats: {
@@ -984,6 +1499,10 @@ const BecomeModel = () => {
                                     inches: "",
                                     cm: "",
                                   },
+                                  dress: "",
+                                  cup: "",
+                                  shoe: "",
+                                  suit: "",
                                 },
                               }));
                             }}
@@ -1003,8 +1522,14 @@ const BecomeModel = () => {
                             onChange={() => {
                               setMeasurementSystem("usa-can");
                               setShowHeightDropdown(false);
+                              setShowSuitDropdown(false);
+                              setShowDressDropdown(false);
+                              setShowCupDropdown(false);
+                              setShowShoeDropdown(false);
                               setSelectedHeightBase(null);
                               setSelectedFraction(null);
+                              setSelectedSuitNumber("");
+                              setSelectedSuitFit("");
                               setFormData((prev) => ({
                                 ...prev,
                                 stats: {
@@ -1014,6 +1539,10 @@ const BecomeModel = () => {
                                     inches: "",
                                     cm: "",
                                   },
+                                  dress: "",
+                                  cup: "",
+                                  shoe: "",
+                                  suit: "",
                                 },
                               }));
                             }}
@@ -1239,28 +1768,115 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Dress
                           </label>
-                          <input
-                            type="text"
-                            name="stats.dress"
-                            value={formData.stats.dress}
-                            onChange={handleChange}
-                            placeholder="4"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          <div className="relative" ref={dressDropdownRef}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowDressDropdown((prev) => !prev)
+                              }
+                              className="w-full rounded-md px-4 py-2.5 border border-gray-300 bg-white text-left flex items-center justify-between"
+                            >
+                              <span
+                                className={
+                                  formData.stats.dress
+                                    ? "text-gray-700"
+                                    : "text-gray-400 uppercase tracking-wide"
+                                }
+                              >
+                                {formData.stats.dress || "DRESS"}
+                              </span>
+
+                              <svg
+                                className={`w-5 h-5 transition-transform ${showDressDropdown ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+
+                            {showDressDropdown && (
+                              <div className="absolute z-50 mt-2 w-[220px] max-h-[500px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+                                <div className="space-y-1.5">
+                                  {dressOptions[measurementSystem].map(
+                                    (option) => (
+                                      <button
+                                        key={option}
+                                        type="button"
+                                        onClick={() => {
+                                          setFormData((prev) => ({
+                                            ...prev,
+                                            stats: {
+                                              ...prev.stats,
+                                              dress: option,
+                                            },
+                                          }));
+                                          setShowDressDropdown(false);
+                                        }}
+                                          className={`w-full border rounded-md px-3 py-1.5 text-sm text-left ${formData.stats.dress === option ? "border-black bg-black text-white" : "border-gray-400 hover:bg-gray-100"}`}
+                                      >
+                                        {option}
+                                      </button>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium mb-2">
                             Chest
                           </label>
-                          <input
-                            type="text"
-                            name="stats.chest"
-                            value={formData.stats.chest}
-                            onChange={handleChange}
-                            placeholder="34"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {formData.gender === "female" &&
+                          measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="CHEST"
+                              value={formData.stats.bust}
+                              options={usaCanFemaleMeasurementRanges.chest}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    bust: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : formData.gender === "female" &&
+                            measurementSystem === "euro-metric" ? (
+                            <HalfMeasurementPicker
+                              label="CHEST"
+                              value={formData.stats.bust}
+                              options={euroMetricFemaleMeasurementRanges.chest}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    bust: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              name="stats.chest"
+                              value={formData.stats.chest}
+                              onChange={handleChange}
+                              placeholder="34"
+                              className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -1269,42 +1885,159 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Cup
                           </label>
-                          <input
-                            type="text"
-                            name="stats.cup"
-                            value={formData.stats.cup}
-                            onChange={handleChange}
-                            placeholder="B"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          <div className="relative" ref={cupDropdownRef}>
+                            <button
+                              type="button"
+                              onClick={() => setShowCupDropdown((prev) => !prev)}
+                              className="w-full rounded-md px-4 py-2.5 border border-gray-300 bg-white text-left flex items-center justify-between"
+                            >
+                              <span
+                                className={
+                                  formData.stats.cup
+                                    ? "text-gray-700"
+                                    : "text-gray-400 uppercase tracking-wide"
+                                }
+                              >
+                                {formData.stats.cup || "CUP"}
+                              </span>
+
+                              <svg
+                                className={`w-5 h-5 transition-transform ${showCupDropdown ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+
+                            {showCupDropdown && (
+                              <div className="absolute z-50 mt-2 w-[190px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+                                <div className="space-y-1.5">
+                                  {cupOptions[measurementSystem].map((option) => (
+                                    <button
+                                      key={option}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          stats: {
+                                            ...prev.stats,
+                                            cup: option,
+                                          },
+                                        }));
+                                        setShowCupDropdown(false);
+                                      }}
+                                      className={`w-full border rounded-md px-3 py-1.5 text-sm text-left ${formData.stats.cup === option ? "border-black bg-black text-white" : "border-gray-400 hover:bg-gray-100"}`}
+                                    >
+                                      {option}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium mb-2">
                             Waist
                           </label>
-                          <input
-                            type="text"
-                            name="stats.waist"
-                            value={formData.stats.waist}
-                            onChange={handleChange}
-                            placeholder="24"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {formData.gender === "female" &&
+                          measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="WAIST"
+                              value={formData.stats.waist}
+                              options={usaCanFemaleMeasurementRanges.waist}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    waist: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : formData.gender === "female" &&
+                            measurementSystem === "euro-metric" ? (
+                            <HalfMeasurementPicker
+                              label="WAIST"
+                              value={formData.stats.waist}
+                              options={euroMetricFemaleMeasurementRanges.waist}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    waist: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              name="stats.waist"
+                              value={formData.stats.waist}
+                              onChange={handleChange}
+                              placeholder="24"
+                              className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                            />
+                          )}
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium mb-2">
                             Hips
                           </label>
-                          <input
-                            type="text"
-                            name="stats.hips"
-                            value={formData.stats.hips}
-                            onChange={handleChange}
-                            placeholder="35"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {formData.gender === "female" &&
+                          measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="HIPS"
+                              value={formData.stats.hips}
+                              options={usaCanFemaleMeasurementRanges.hips}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    hips: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : formData.gender === "female" &&
+                            measurementSystem === "euro-metric" ? (
+                            <HalfMeasurementPicker
+                              label="HIPS"
+                              value={formData.stats.hips}
+                              options={euroMetricFemaleMeasurementRanges.hips}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    hips: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              name="stats.hips"
+                              value={formData.stats.hips}
+                              onChange={handleChange}
+                              placeholder="35"
+                              className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -1313,14 +2046,63 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Shoe
                           </label>
-                          <input
-                            type="text"
-                            name="stats.shoe"
-                            value={formData.stats.shoe}
-                            onChange={handleChange}
-                            placeholder="8"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          <div className="relative" ref={shoeDropdownRef}>
+                            <button
+                              type="button"
+                              onClick={() => setShowShoeDropdown((prev) => !prev)}
+                              className="w-full rounded-md px-4 py-2.5 border border-gray-300 bg-white text-left flex items-center justify-between"
+                            >
+                              <span
+                                className={
+                                  formData.stats.shoe
+                                    ? "text-gray-700"
+                                    : "text-gray-400 uppercase tracking-wide"
+                                }
+                              >
+                                {formData.stats.shoe || "SHOE"}
+                              </span>
+
+                              <svg
+                                className={`w-5 h-5 transition-transform ${showShoeDropdown ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+
+                            {showShoeDropdown && (
+                              <div className="absolute z-50 mt-2 w-[210px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+                                <div className="space-y-1.5">
+                                  {shoeOptions[measurementSystem].map((option) => (
+                                    <button
+                                      key={option}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          stats: {
+                                            ...prev.stats,
+                                            shoe: option,
+                                          },
+                                        }));
+                                        setShowShoeDropdown(false);
+                                      }}
+                                      className={`w-full border rounded-md px-3 py-1.5 text-sm text-left ${formData.stats.shoe === option ? "border-black bg-black text-white" : "border-gray-400 hover:bg-gray-100"}`}
+                                    >
+                                      {option}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1343,7 +2125,7 @@ const BecomeModel = () => {
                             name="stats.chest"
                             value={formData.stats.chest}
                             onChange={handleChange}
-                               placeholder="40"
+                            placeholder="40"
                             className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
                           />
                         </div>
@@ -1368,14 +2150,81 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Suit
                           </label>
-                          <input
-                            type="text"
-                            name="stats.suit"
-                            value={formData.stats.suit}
-                            onChange={handleChange}
-                            placeholder="40R"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          <div className="relative" ref={suitDropdownRef}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowSuitDropdown((prev) => !prev)
+                              }
+                              className="w-full px-6 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+                            >
+                              <span
+                                className={
+                                  formData.stats.suit
+                                    ? "text-gray-700"
+                                    : "text-gray-400 uppercase tracking-wide"
+                                }
+                              >
+                                {formData.stats.suit || "SUIT"}
+                              </span>
+
+                              <svg
+                                className={`w-5 h-5 transition-transform ${showSuitDropdown ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+
+                            {showSuitDropdown && (
+                              <div className="absolute z-50 mt-2 w-full max-h-[500px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-sm p-4">
+                                <div className="space-y-2">
+                                  {suitNumbers[measurementSystem].map((num) => (
+                                    <div
+                                      key={num}
+                                      className="grid grid-cols-[56px_14px_1fr] gap-2 items-center"
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          handleSuitSelect(num, "R")
+                                        }
+                                        className={`border rounded px-2 py-1 text-sm min-w-[56px] leading-none ${selectedSuitNumber === num && selectedSuitFit === "R" ? "border-black bg-black text-white" : "border-gray-400 hover:bg-gray-100"}`}
+                                      >
+                                        {num}
+                                      </button>
+
+                                      <div className="text-sm text-center">
+                                        •
+                                      </div>
+
+                                      <div className="flex gap-1 flex-nowrap overflow-x-auto">
+                                        {suitFits.map((fit) => (
+                                          <button
+                                            key={fit}
+                                            type="button"
+                                            onClick={() =>
+                                              handleSuitSelect(num, fit)
+                                            }
+                                            className={`border rounded px-2 py-1 text-xs min-w-[42px] whitespace-nowrap leading-none ${selectedSuitNumber === num && selectedSuitFit === fit ? "border-black bg-black text-white" : "border-gray-400 hover:bg-gray-100"}`}
+                                          >
+                                            {fit}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <div>
@@ -1426,14 +2275,63 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Shoe
                           </label>
-                          <input
-                            type="text"
-                            name="stats.shoe"
-                            value={formData.stats.shoe}
-                            onChange={handleChange}
-                            placeholder="10"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          <div className="relative" ref={shoeDropdownRef}>
+                            <button
+                              type="button"
+                              onClick={() => setShowShoeDropdown((prev) => !prev)}
+                              className="w-full px-6 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+                            >
+                              <span
+                                className={
+                                  formData.stats.shoe
+                                    ? "text-gray-700"
+                                    : "text-gray-400 uppercase tracking-wide"
+                                }
+                              >
+                                {formData.stats.shoe || "SHOE"}
+                              </span>
+
+                              <svg
+                                className={`w-5 h-5 transition-transform ${showShoeDropdown ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+
+                            {showShoeDropdown && (
+                              <div className="absolute z-50 mt-2 w-[210px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-sm p-3">
+                                <div className="space-y-1.5">
+                                  {shoeOptions[measurementSystem].map((option) => (
+                                    <button
+                                      key={option}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          stats: {
+                                            ...prev.stats,
+                                            shoe: option,
+                                          },
+                                        }));
+                                        setShowShoeDropdown(false);
+                                      }}
+                                      className={`w-full border rounded px-3 py-1.5 text-sm text-left ${formData.stats.shoe === option ? "border-black bg-black text-white" : "border-gray-400 hover:bg-gray-100"}`}
+                                    >
+                                      {option}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1448,13 +2346,19 @@ const BecomeModel = () => {
                         <label className="block text-sm font-medium mb-2">
                           Hair Color
                         </label>
-                        <input
-                          type="text"
-                          name="stats.hairColor"
+                        <SimplePopupSelect
+                          label="HAIR"
                           value={formData.stats.hairColor}
-                          onChange={handleChange}
-                          placeholder="Brown"
-                          className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                          options={hairOptions}
+                          onSelect={(selectedValue) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              stats: {
+                                ...prev.stats,
+                                hairColor: selectedValue,
+                              },
+                            }))
+                          }
                         />
                       </div>
 
@@ -1462,13 +2366,19 @@ const BecomeModel = () => {
                         <label className="block text-sm font-medium mb-2">
                           Eye Color
                         </label>
-                        <input
-                          type="text"
-                          name="stats.eyeColor"
+                        <SimplePopupSelect
+                          label="EYES"
                           value={formData.stats.eyeColor}
-                          onChange={handleChange}
-                          placeholder="Blue"
-                          className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                          options={eyeOptions}
+                          onSelect={(selectedValue) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              stats: {
+                                ...prev.stats,
+                                eyeColor: selectedValue,
+                              },
+                            }))
+                          }
                         />
                       </div>
                     </div>
@@ -1476,7 +2386,8 @@ const BecomeModel = () => {
 
                   <div className="pt-10 border-t mt-10">
                     <h3 className="text-2xl font-light uppercase tracking-wide mb-6">
-                      Social Media <span className="text-gray-500">(Optional)</span>
+                      Social Media{" "}
+                      <span className="text-gray-500">(Optional)</span>
                     </h3>
 
                     <div className="space-y-4">
