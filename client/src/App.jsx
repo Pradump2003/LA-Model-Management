@@ -24,12 +24,14 @@ import SpecialBooking from "./pages/models/SpecialBooking";
 import Juniors from "./pages/models/Juniors";
 import ModelDetail from "./pages/models/ModelDetail";
 import ApplicationSuccess from "./pages/ApplicationSuccess";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 function App() {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
         <Navbar />
+        <ScrollToTop />
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -59,6 +61,7 @@ function App() {
             />
             <Route path="/models/juniors" element={<Juniors />} />
             <Route path="/model/:slug" element={<ModelDetail />} />
+            <Route path="/models/:slug" element={<ModelDetail />} />
           </Routes>
         </main>
         <Footer />

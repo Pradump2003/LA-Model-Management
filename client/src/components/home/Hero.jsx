@@ -1,8 +1,11 @@
 // src/components/home/Hero.jsx
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 const Hero = () => {
+  const navigate = useNavigate();
   const scrollToContent = () => {
     window.scrollTo({
       top: window.innerHeight,
@@ -40,6 +43,7 @@ const Hero = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-4 bg-white text-black text-sm font-medium uppercase tracking-wider hover:bg-gray-100 transition-colors"
+              onClick={() => navigate("/models")}
             >
               View Our Models
             </motion.button>

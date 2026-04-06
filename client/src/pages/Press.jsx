@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 
 const highlights = [
   "Bi-coastal model development with synchronized client exposure.",
@@ -15,43 +17,146 @@ const milestones = [
   { year: "2001", detail: "Positioned LA and NY model boards to serve major global campaign production." },
 ];
 
+// Animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { duration: 0.8, ease: "easeOut" }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const slideInLeft = {
+  hidden: { opacity: 0, x: -30 },
+  visible: { 
+    opacity: 1, 
+    x: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+import { useEffect } from "react";
+
 const Press = () => {
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  const [headerRef, headerInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [articleRef, articleInView] = useInView({ triggerOnce: true, threshold: 0.05 });
+  const [sidebarRef, sidebarInView] = useInView({ triggerOnce: true, threshold: 0.1 });
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8f8f6] via-white to-white">
+      {/* Hero Section */}
       <div className="relative h-[60vh] overflow-hidden">
-        <img
+        <motion.img
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=1920&q=80"
           alt="Press"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 bg-black/55 flex items-center justify-center"
+        >
           <div className="text-center text-white px-4">
-            <p className="text-xs uppercase tracking-[0.24em] text-white/85 mb-4">
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xs uppercase tracking-[0.24em] text-white/85 mb-4"
+            >
               MODELS.com - Agency Spotlight
-            </p>
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight max-w-4xl">
+            </motion.p>
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="text-4xl md:text-6xl font-bold leading-tight max-w-4xl"
+            >
               LA MODELS & NEW YORK MODELS
-            </h1>
-            <p className="mt-4 text-base md:text-lg text-white/90">by Wayne Sterling</p>
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="mt-4 text-base md:text-lg text-white/90"
+            >
+              by Wayne Sterling
+            </motion.p>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      <header className="pt-10 pb-12 border-b border-gray-200/80">
+      {/* Header */}
+      <motion.header 
+        ref={headerRef}
+        initial="hidden"
+        animate={headerInView ? "visible" : "hidden"}
+        variants={fadeInUp}
+        className="pt-10 pb-12 border-b border-gray-200/80"
+      >
         <div className="container-custom max-w-6xl mx-auto px-4">
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600">
-            <p>Editorial Interview</p>
-            <span className="h-1 w-1 rounded-full bg-gray-400" />
-            <p>Interview Feature</p>
-            <span className="h-1 w-1 rounded-full bg-gray-400" />
-            <p>Agency Strategy & Vision</p>
-          </div>
+          <motion.div 
+            variants={staggerContainer}
+            className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600"
+          >
+            <motion.p variants={fadeIn}>Editorial Interview</motion.p>
+            <motion.span variants={fadeIn} className="h-1 w-1 rounded-full bg-gray-400" />
+            <motion.p variants={fadeIn}>Interview Feature</motion.p>
+            <motion.span variants={fadeIn} className="h-1 w-1 rounded-full bg-gray-400" />
+            <motion.p variants={fadeIn}>Agency Strategy & Vision</motion.p>
+          </motion.div>
         </div>
-      </header>
+      </motion.header>
 
       <div className="container-custom max-w-6xl mx-auto px-4 py-14 grid lg:grid-cols-[1fr_300px] gap-10">
-        <article className="space-y-9 text-[17px] leading-8 text-gray-800">
-          <section className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+        {/* Main Article */}
+        <motion.article 
+          ref={articleRef}
+          initial="hidden"
+          animate={articleInView ? "visible" : "hidden"}
+          variants={staggerContainer}
+          className="space-y-9 text-[17px] leading-8 text-gray-800"
+        >
+          <motion.section 
+            variants={scaleIn}
+            className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-shadow duration-500"
+          >
             <h2 className="text-2xl font-semibold text-black mb-4">Feature Overview</h2>
             <p>
               In 1985 when Austrian born Heinz Holba made the then daring decision
@@ -71,14 +176,17 @@ const Press = () => {
               with MODELS.com's Wayne Sterling to outline the logic behind his aesthetic
               and his vision for the future.
             </p>
-          </section>
+          </motion.section>
 
-          <blockquote className="border-l-4 border-black pl-6 py-2 text-xl leading-9 text-gray-900 font-medium italic">
+          <motion.blockquote 
+            variants={slideInLeft}
+            className="border-l-4 border-black pl-6 py-2 text-xl leading-9 text-gray-900 font-medium italic"
+          >
             "We simply wanted to be different from other agencies and offer more
             choices and ideas to clients."
-          </blockquote>
+          </motion.blockquote>
 
-          <section>
+          <motion.section variants={fadeInUp}>
             <h2 className="text-2xl font-semibold text-black mb-4">
               Q: Could you please tell us how you became involved in the modeling industry?
             </h2>
@@ -93,9 +201,9 @@ const Press = () => {
               those franchises in 1985 when I opened LA Models, because by this time I
               preferred to be independent as opposed to being a franchise.
             </p>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section variants={fadeInUp}>
             <h2 className="text-2xl font-semibold text-black mb-4">
               Q: You are in a unique position in that you have NY Models and LA Models
               serving as bi-coastal powerhouses. What are the benefits of this positioning
@@ -109,9 +217,9 @@ const Press = () => {
               as well as print and to submit them to clients on both coasts. We feel like
               it gives our models an edge over other beginners as well as established models.
             </p>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section variants={fadeInUp}>
             <h2 className="text-2xl font-semibold text-black mb-4">
               Q: What would you describe as NY Model's key aesthetic?
             </h2>
@@ -121,9 +229,9 @@ const Press = () => {
               trendsetting. We try to create that excitement of discovery when we offer new
               models to clients.
             </p>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section variants={fadeInUp}>
             <h2 className="text-2xl font-semibold text-black mb-4">
               Q: Is this similar or different for LA Models?
             </h2>
@@ -133,9 +241,9 @@ const Press = () => {
               directors and advertising and catalogue clients casting and shooting on the
               West Coast.
             </p>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section variants={fadeInUp}>
             <h2 className="text-2xl font-semibold text-black mb-4">
               Q: What advantages or benefits would you say the LA market offers that the NY
               market does not?
@@ -146,9 +254,9 @@ const Press = () => {
               additional opportunities to further their careers. The earning potential is
               also obviously also much higher in film than in print.
             </p>
-          </section>
+          </motion.section>
 
-          <section>
+          <motion.section variants={fadeInUp}>
             <h2 className="text-2xl font-semibold text-black mb-4">
               Q: Your agencies are known for their revolutionary views on what a model
               should look like. What inspired you to take this path?
@@ -158,9 +266,12 @@ const Press = () => {
               and ideas to clients as well as possibilities for models that do not exist in
               the larger, more traditional and commercial agencies.
             </p>
-          </section>
+          </motion.section>
 
-          <section className="bg-[#f7f7f5] border border-gray-200 rounded-2xl p-6 md:p-8">
+          <motion.section 
+            variants={scaleIn}
+            className="bg-[#f7f7f5] border border-gray-200 rounded-2xl p-6 md:p-8 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-shadow duration-500"
+          >
             <h2 className="text-2xl font-semibold text-black mb-4">Industry Context</h2>
             <p>
               The perspective in this interview remains highly relevant: global model
@@ -170,54 +281,101 @@ const Press = () => {
               shift early, pairing New York's fashion intensity with Los Angeles' scale in
               entertainment and advertising.
             </p>
-          </section>
+          </motion.section>
 
-          <footer className="pt-3 border-t border-gray-200">
+          <motion.footer variants={fadeInUp} className="pt-3 border-t border-gray-200">
             <p className="text-sm uppercase tracking-[0.2em] text-gray-500">
               MODELS.com - Agency Spotlight
             </p>
-          </footer>
-        </article>
+          </motion.footer>
+        </motion.article>
 
-        <aside className="space-y-6">
-          <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
+        {/* Sidebar */}
+        <motion.aside 
+          ref={sidebarRef}
+          initial="hidden"
+          animate={sidebarInView ? "visible" : "hidden"}
+          variants={staggerContainer}
+          className="space-y-6"
+        >
+          <motion.section 
+            variants={scaleIn}
+            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.05)] transition-all duration-500"
+          >
             <h3 className="text-lg font-semibold text-black mb-4">Key Highlights</h3>
-            <ul className="space-y-3 text-sm text-gray-700 leading-6">
-              {highlights.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-black" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
-            <h3 className="text-lg font-semibold text-black mb-4">Agency Milestones</h3>
-            <div className="space-y-4">
-              {milestones.map((milestone) => (
-                <div key={milestone.year} className="border-l-2 border-gray-200 pl-4">
-                  <p className="text-sm font-semibold text-black">{milestone.year}</p>
-                  <p className="text-sm text-gray-700 leading-6">{milestone.detail}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-black text-white rounded-2xl p-6">
-            <h3 className="text-lg font-semibold mb-3">Press & Editorial Inquiries</h3>
-            <p className="text-sm text-white/85 leading-6 mb-4">
-              For verified media requests, interview follow-ups, and brand partnership
-              opportunities, please contact the agency through the official contact channel.
-            </p>
-            <Link
-              to="/contact"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-white text-black text-xs font-semibold uppercase tracking-wide hover:bg-gray-200 transition-colors"
+            <motion.ul 
+              variants={staggerContainer}
+              className="space-y-3 text-sm text-gray-700 leading-6"
             >
-              Contact LA Models
-            </Link>
-          </section>
-        </aside>
+              {highlights.map((item, index) => (
+                <motion.li 
+                  key={item} 
+                  variants={fadeIn}
+                  custom={index}
+                  className="flex gap-2 group"
+                >
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 200 }}
+                    className="mt-2 h-1.5 w-1.5 rounded-full bg-black group-hover:scale-150 transition-transform duration-300" 
+                  />
+                  <span className="group-hover:translate-x-1 transition-transform duration-300">{item}</span>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.section>
+
+          <motion.section 
+            variants={scaleIn}
+            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.05)] transition-all duration-500"
+          >
+            <h3 className="text-lg font-semibold text-black mb-4">Agency Milestones</h3>
+            <motion.div 
+              variants={staggerContainer}
+              className="space-y-4"
+            >
+              {milestones.map((milestone, index) => (
+                <motion.div 
+                  key={milestone.year} 
+                  variants={fadeInUp}
+                  custom={index}
+                  className="border-l-2 border-gray-200 pl-4 hover:border-black transition-colors duration-300 group"
+                >
+                  <p className="text-sm font-semibold text-black group-hover:translate-x-1 transition-transform duration-300">
+                    {milestone.year}
+                  </p>
+                  <p className="text-sm text-gray-700 leading-6 group-hover:translate-x-1 transition-transform duration-300">
+                    {milestone.detail}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.section>
+
+          <motion.section 
+            variants={scaleIn}
+            className="bg-black text-white rounded-2xl p-6 overflow-hidden relative group"
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              initial={false}
+            />
+            <div className="relative z-10">
+              <h3 className="text-lg font-semibold mb-3">Press & Editorial Inquiries</h3>
+              <p className="text-sm text-white/85 leading-6 mb-4">
+                For verified media requests, interview follow-ups, and brand partnership
+                opportunities, please contact the agency through the official contact channel.
+              </p>
+              <Link
+                to="/contact"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-white text-black text-xs font-semibold uppercase tracking-wide hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                Contact LA Models
+              </Link>
+            </div>
+          </motion.section>
+        </motion.aside>
       </div>
     </div>
   );

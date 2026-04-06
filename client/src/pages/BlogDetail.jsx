@@ -1,6 +1,25 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import api from "../services/api";
+
+const FALLBACK_BLOG_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Crect width='1600' height='900' fill='%230f172a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23e2e8f0' font-family='Arial,sans-serif' font-size='56'%3ENews Article%3C/text%3E%3C/svg%3E";
+
+const sanitizeBlogImageUrl = (url) => {
+  if (typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("res.cloudinary.com/demo/")) return null;
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("data:image")
+  ) {
+    return trimmed;
+  }
+  return null;
+};
 
 const BlogDetail = () => {
   const { slug } = useParams();
@@ -74,10 +93,16 @@ const BlogDetail = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="relative h-[60vh] overflow-hidden">
+        {/** Prevent runtime 404s from demo URLs stored in DB. */}
         <img
-          src={blog.featuredImage?.url || "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1920&q=80"}
+          src={sanitizeBlogImageUrl(blog.featuredImage?.url) || "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1920&q=80"}
           alt={blog.featuredImage?.alt || blog.title}
           className="w-full h-full object-cover"
+          onError={(event) => {
+            if (event.currentTarget.src !== FALLBACK_BLOG_IMAGE) {
+              event.currentTarget.src = FALLBACK_BLOG_IMAGE;
+            }
+          }}
         />
         <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
           <h1 className="text-white text-4xl md:text-5xl font-bold text-center px-6">

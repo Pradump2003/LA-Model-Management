@@ -246,7 +246,9 @@ exports.searchModels = asyncHandler(async (req, res) => {
 exports.getModelBySlug = asyncHandler(async (req, res) => {
   const { slug } = req.params;
 
-  const model = await Model.findOne({ slug, status: "active" });
+  const model = await Model.findOne({ slug, status: "active" })
+    .select("-__v") // Exclude the __v field
+    .populate("photos"); // Ensure photos are populated
 
   if (!model) {
     return new ApiResponse(false, "Model not found", null, 404).send(res);

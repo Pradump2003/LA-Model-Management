@@ -1,10 +1,15 @@
 // src/pages/Contact.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Send } from "lucide-react";
 import { contactAPI } from "../services/api";
 
 const Contact = () => {
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",

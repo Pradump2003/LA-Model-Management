@@ -1,3 +1,21 @@
+const FALLBACK_BLOG_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='Arial,sans-serif' font-size='32'%3ENews%20Image%3C/text%3E%3C/svg%3E";
+
+const sanitizeBlogImageUrl = (url) => {
+  if (typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.includes("res.cloudinary.com/demo/")) return null;
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("data:image")
+  ) {
+    return trimmed;
+  }
+  return null;
+};
 // src/components/home/LatestNews.jsx
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -70,9 +88,14 @@ const LatestNews = () => {
               <Link to={`/news/${blog.slug}`} className="group block">
                 <div className="aspect-video overflow-hidden bg-gray-100 mb-4">
                   <img
-                    src={blog.featuredImage?.url || 'https://via.placeholder.com/800x600'}
+                    src={sanitizeBlogImageUrl(blog.featuredImage?.url) || FALLBACK_BLOG_IMAGE}
                     alt={blog.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(event) => {
+                      if (event.currentTarget.src !== FALLBACK_BLOG_IMAGE) {
+                        event.currentTarget.src = FALLBACK_BLOG_IMAGE;
+                      }
+                    }}
                   />
                 </div>
                 <div className="flex items-center text-xs text-gray-500 mb-2">

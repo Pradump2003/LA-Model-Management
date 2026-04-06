@@ -2,6 +2,27 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
+const FALLBACK_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600'%3E%3Crect width='400' height='600' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='Arial,sans-serif' font-size='26'%3EModel%3C/text%3E%3C/svg%3E";
+
+const isKnownBrokenDemoUrl = (url) =>
+  typeof url === "string" && url.includes("res.cloudinary.com/demo/");
+
+const resolveImageUrl = (image) => {
+  if (!image) return null;
+  if (typeof image === "string") {
+    const trimmed = image.trim();
+    return isKnownBrokenDemoUrl(trimmed) ? null : trimmed;
+  }
+  const url = image.url?.trim() || null;
+  return isKnownBrokenDemoUrl(url) ? null : url;
+};
+
+const getModelImage = (model) =>
+  resolveImageUrl(model.portfolio?.profileImage) ||
+  resolveImageUrl(model.photos?.[0]) ||
+  FALLBACK_IMAGE;
+
 const ModelGrid = ({ models, loading }) => {
   if (loading) {
     return (
@@ -31,13 +52,14 @@ const ModelGrid = ({ models, loading }) => {
           <Link to={`/model/${model.slug}`} className="group block">
             <div className="aspect-[3/4] overflow-hidden bg-gray-100 mb-3">
               <img
-                src={
-                  model.portfolio?.profileImage ||
-                  model.photos?.[0]?.url ||
-                  "https://via.placeholder.com/400x600"
-                }
+                src={getModelImage(model)}
                 alt={`${model.firstName} ${model.lastName}`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                onError={(event) => {
+                  if (event.currentTarget.src !== FALLBACK_IMAGE) {
+                    event.currentTarget.src = FALLBACK_IMAGE;
+                  }
+                }}
               />
             </div>
             <h3 className="text-base font-medium mb-1">

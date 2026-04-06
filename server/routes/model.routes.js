@@ -18,11 +18,12 @@ const { protect } = require("../middlewares/auth.middleware");
 
 // Get all active models
 router.get("/", getAllModels);
-router.get("/:id", getModelById);
+
 
 router.get("/search", searchModels); // Dedicated search endpoint
 
 router.get("/:slug", getModelBySlug);
+router.get("/:id", getModelById);
 
 router.post("/", protect, createModel);
 

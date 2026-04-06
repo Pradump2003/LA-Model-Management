@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import api from "../services/api";
+
+const FALLBACK_BLOG_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-family='Arial,sans-serif' font-size='36'%3ENews Image%3C/text%3E%3C/svg%3E";
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -88,12 +96,12 @@ const Blogs = () => {
               {blogs.map((blog) => (
                 <article key={blog._id} className="border border-gray-200 p-4">
                   <img
-                    src={
-                      blog.featuredImage?.url ||
-                      "https://via.placeholder.com/800x600"
-                    }
-                    alt={blog.title}
+                    src={blog.featuredImage?.url || FALLBACK_BLOG_IMAGE}
+                    alt={blog.title || "Blog Image"}
                     className="w-full h-48 object-cover mb-4"
+                    onError={(event) => {
+                      event.currentTarget.src = FALLBACK_BLOG_IMAGE;
+                    }}
                   />
                   <p className="text-xs text-gray-500 mb-2">
                     {blog.publishedAt
