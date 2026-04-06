@@ -1,6 +1,6 @@
 // src/components/common/Footer.jsx
 import { Link } from "react-router-dom";
-import { Camera, Globe, Send } from "lucide-react";
+import { FaInstagram, FaFacebookF, FaXTwitter } from "react-icons/fa6";
 
 const Footer = () => {
   return (
@@ -106,7 +106,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <Camera className="w-6 h-6" />
+                <FaInstagram className="w-6 h-6" />
               </a>
               <a
                 href="https://facebook.com"
@@ -114,7 +114,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <Globe className="w-6 h-6" />
+                <FaFacebookF className="w-6 h-6" />
               </a>
               <a
                 href="https://twitter.com"
@@ -122,7 +122,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
               >
-                <Send className="w-6 h-6" />
+                <FaXTwitter className="w-6 h-6" />
               </a>
             </div>
           </div>

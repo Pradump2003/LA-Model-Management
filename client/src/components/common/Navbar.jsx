@@ -1,13 +1,29 @@
 // src/components/common/Navbar.jsx
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, ChevronDown, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [modelsDropdown, setModelsDropdown] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const isSolidNavbar = scrolled;
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const trimmed = searchTerm.trim();
+
+    if (!trimmed) {
+      navigate("/models");
+      return;
+    }
+
+    navigate(`/models?q=${encodeURIComponent(trimmed)}&page=1`);
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,7 +47,7 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-white shadow-md py-4" : "bg-transparent py-6"
+        isSolidNavbar ? "bg-white shadow-md py-4" : "bg-transparent py-6"
       }`}
     >
       <div className="container-custom">
@@ -40,7 +56,7 @@ const Navbar = () => {
           <Link to="/" className="flex items-center">
             <h1
               className={`text-3xl font-bold tracking-wider transition-colors ${
-                scrolled ? "text-black" : "text-white"
+                isSolidNavbar ? "text-black" : "text-white"
               }`}
             >
               LA MODELS
@@ -57,7 +73,7 @@ const Navbar = () => {
             >
               <button
                 className={`flex items-center space-x-1 text-sm font-medium uppercase tracking-wide transition-colors ${
-                  scrolled
+                  isSolidNavbar
                     ? "text-black hover:text-gray-600"
                     : "text-white hover:text-gray-200"
                 }`}
@@ -91,7 +107,7 @@ const Navbar = () => {
             <Link
               to="/about"
               className={`text-sm font-medium uppercase tracking-wide transition-colors ${
-                scrolled
+                isSolidNavbar
                   ? "text-black hover:text-gray-600"
                   : "text-white hover:text-gray-200"
               }`}
@@ -102,7 +118,7 @@ const Navbar = () => {
             <Link
               to="/news"
               className={`text-sm font-medium uppercase tracking-wide transition-colors ${
-                scrolled
+                isSolidNavbar
                   ? "text-black hover:text-gray-600"
                   : "text-white hover:text-gray-200"
               }`}
@@ -111,9 +127,20 @@ const Navbar = () => {
             </Link>
 
             <Link
+              to="/press"
+              className={`text-sm font-medium uppercase tracking-wide transition-colors ${
+                isSolidNavbar
+                  ? "text-black hover:text-gray-600"
+                  : "text-white hover:text-gray-200"
+              }`}
+            >
+              Press
+            </Link>
+
+            <Link
               to="/contact"
               className={`text-sm font-medium uppercase tracking-wide transition-colors ${
-                scrolled
+                isSolidNavbar
                   ? "text-black hover:text-gray-600"
                   : "text-white hover:text-gray-200"
               }`}
@@ -127,12 +154,31 @@ const Navbar = () => {
             >
               Become a Model
             </Link>
+
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <Search
+                className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${
+                  isSolidNavbar ? "text-gray-500" : "text-white/80"
+                }`}
+              />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search models"
+                className={`w-52 rounded-full border pl-9 pr-4 py-2 text-xs uppercase tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 ${
+                  isSolidNavbar
+                    ? "border-gray-300 bg-white text-black placeholder:text-gray-400"
+                    : "border-white/50 bg-white/10 text-white placeholder:text-white/70"
+                }`}
+              />
+            </form>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`lg:hidden ${scrolled ? "text-black" : "text-white"}`}
+            className={`lg:hidden ${isSolidNavbar ? "text-black" : "text-white"}`}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -148,6 +194,19 @@ const Navbar = () => {
               className="lg:hidden mt-4 bg-white"
             >
               <div className="py-4 space-y-4">
+                <form onSubmit={handleSearchSubmit} className="px-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search models"
+                      className="w-full rounded-full border border-gray-300 pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10"
+                    />
+                  </div>
+                </form>
+
                 <div className="border-b pb-4">
                   <p className="px-4 text-xs font-semibold text-gray-500 uppercase mb-2">
                     Divisions
@@ -178,6 +237,14 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                 >
                   News
+                </Link>
+
+                <Link
+                  to="/press"
+                  className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Press
                 </Link>
 
                 <Link

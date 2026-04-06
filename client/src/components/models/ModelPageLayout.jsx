@@ -1,7 +1,7 @@
 // src/components/models/ModelPageLayout.jsx
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import ModelGrid from "./ModelGrid";
 import { modelsAPI } from "../../services/api";
 
@@ -13,6 +13,7 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
 
   const page = parseInt(searchParams.get("page")) || 1;
   const category = searchParams.get("category") || "";
+  const searchQuery = searchParams.get("q") || "";
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -32,6 +33,10 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
           params.category = category;
         }
 
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+
         const response = await modelsAPI.getAll(params);
 
         if (response.data.success) {
@@ -46,7 +51,7 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
     };
 
     fetchModels();
-  }, [division, page, category]);
+  }, [division, page, category, searchQuery]);
 
   const categories =
     division === "women" || division === "men"
@@ -58,14 +63,18 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
           : [];
 
   const handlePageChange = (newPage) => {
-    setSearchParams({ page: newPage, ...(category && { category }) });
+    setSearchParams({
+      page: newPage,
+      ...(category && { category }),
+      ...(searchQuery && { q: searchQuery }),
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative h-[50vh] overflow-hidden">
+      <div className="relative h-[60vh] overflow-hidden">
         <img
           src={heroImage}
           alt={title}
@@ -73,22 +82,22 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
         />
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
           <div className="text-center text-white">
-            <motion.h1
+            <Motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-6xl md:text-7xl font-bold mb-4"
             >
               {title}
-            </motion.h1>
+            </Motion.h1>
             {description && (
-              <motion.p
+              <Motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="text-xl text-white/90"
               >
                 {description}
-              </motion.p>
+              </Motion.p>
             )}
           </div>
         </div>
@@ -99,7 +108,9 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
         {categories.length > 0 && (
           <div className="mb-8 flex flex-wrap gap-3">
             <button
-              onClick={() => setSearchParams({ page: 1 })}
+              onClick={() =>
+                setSearchParams({ page: 1, ...(searchQuery && { q: searchQuery }) })
+              }
               className={`px-6 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
                 !category
                   ? "bg-black text-white"
@@ -111,7 +122,13 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setSearchParams({ page: 1, category: cat })}
+                onClick={() =>
+                  setSearchParams({
+                    page: 1,
+                    category: cat,
+                    ...(searchQuery && { q: searchQuery }),
+                  })
+                }
                 className={`px-6 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
                   category === cat
                     ? "bg-black text-white"
@@ -121,6 +138,24 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
                 {cat.replace("-", " ")}
               </button>
             ))}
+          </div>
+        )}
+
+        {searchQuery && (
+          <div className="mb-6 flex items-center gap-3 text-sm">
+            <span className="text-gray-500">Search:</span>
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-black">
+              {searchQuery}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                setSearchParams({ page: 1, ...(category && { category }) })
+              }
+              className="text-gray-600 underline hover:text-black"
+            >
+              Clear
+            </button>
           </div>
         )}
 

@@ -7,6 +7,7 @@ import Footer from "./components/common/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Press from "./pages/Press";
 import BecomeModel from "./pages/BecomeModel";
 
 // Blog Pages (you already have these)
@@ -33,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
+            <Route path="/press" element={<Press />} />
 
             {/* Blog/News Routes */}
             <Route path="/news" element={<Blogs />} />

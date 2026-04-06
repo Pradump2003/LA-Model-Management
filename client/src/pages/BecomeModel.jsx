@@ -1,516 +1,35 @@
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+﻿import { useEffect, useRef, useState } from "react";
+import { motion as Motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import {
-  Check,
-  AlertCircle,
-  Camera,
-  Globe,
-  Send,
-  Phone,
-  Upload,
-  X,
-  Image as ImageIcon,
-  Video,
-} from "lucide-react";
+import { Check, Globe, Upload, X, Video } from "lucide-react";
+import { FaInstagram, FaFacebookF, FaXTwitter } from "react-icons/fa6";
 import { applicationsAPI } from "../services/api";
 import { countries } from "../data/countries";
 import * as flags from "country-flag-icons/react/3x2";
-
-const euroMetricHeights = Array.from({ length: 71 }, (_, i) => 130 + i); // 130 to 200 cm
-
-const suitNumbers = {
-  "usa-can": Array.from({ length: 21 }, (_, i) => 34 + i), // 34 to 54
-  "euro-metric": Array.from({ length: 21 }, (_, i) => 35 + i), // 35 to 55
-};
-
-const suitFits = ["S", "R", "R/L", "L", "T"];
-
-const dressOptions = {
-  "usa-can": [
-    "0",
-    "0 - 2",
-    "2",
-    "2 - 4",
-    "4",
-    "4 - 6",
-    "6",
-    "6 - 8",
-    "8",
-    "8 - 10",
-    "10",
-    "10 - 12",
-    "12",
-    "12 - 14",
-    "14",
-    "14 - 16",
-    "16",
-    "16 - 18",
-    "18",
-    "18 - 20",
-    "20",
-    "20 - 22",
-    "22",
-    "22 - 24",
-    "24",
-    "24 - 26",
-    "26",
-    "26 - 28",
-    "28",
-    "28 - 30",
-    "30",
-  ],
-  "euro-metric": [
-    "30",
-    "30 - 32",
-    "32",
-    "32 - 34",
-    "34",
-    "34 - 36",
-    "36",
-    "36 - 38",
-    "38",
-    "38 - 40",
-    "40",
-    "40 - 42",
-    "42",
-    "42 - 44",
-    "44",
-    "44 - 46",
-    "46",
-    "46 - 48",
-    "48",
-    "48 - 50",
-    "50",
-    "50 - 52",
-    "52",
-    "52 - 54",
-    "54",
-    "54 - 56",
-    "56",
-    "56 - 58",
-    "58",
-    "58 - 60",
-    "60",
-  ],
-};
-
-const cupOptions = {
-  "usa-can": [
-    "AA",
-    "A",
-    "A/B",
-    "B",
-    "B/C",
-    "C",
-    "C/D",
-    "D",
-    "DD",
-    "E",
-    "E/F",
-    "F",
-    "FF",
-    "G",
-    "G/GG",
-    "GG/H",
-    "H",
-    "HH",
-    "J",
-  ],
-  "euro-metric": [
-    "AA",
-    "A",
-    "A/B",
-    "B",
-    "B/C",
-    "C",
-    "C/D",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-  ],
-};
-
-const shoeOptions = {
-  "euro-metric": [
-    "34-35",
-    "35",
-    "35-36",
-    "36",
-    "36-37",
-    "37",
-    "37-38",
-    "38",
-    "38-39",
-    "39",
-    "39-40",
-    "40",
-    "40-41",
-    "41",
-    "41-42",
-    "42",
-    "42-43",
-    "43",
-    "43-44",
-    "44",
-    "44-45",
-    "45",
-    "45-46",
-    "46",
-  ],
-  "usa-can": [
-    "4.5",
-    "5",
-    "5.5",
-    "6",
-    "6.5",
-    "7",
-    "7.5",
-    "8",
-    "8.5",
-    "9",
-    "9.5",
-    "10",
-    "10.5",
-    "11",
-    "11.5",
-    "12",
-    "12.5",
-    "13",
-  ],
-};
-
-const eyeOptions = [
-  "Blue",
-  "Blue - Green",
-  "Blue - Grey",
-  "Black",
-  "Brown",
-  "Green",
-  "Grey",
-  "Hazel",
-  "Hazel - Green",
-  "Grey - Green",
-];
-
-const hairOptions = [
-  "Auburn",
-  "Blonde",
-  "Black",
-  "Brown",
-  "Grey",
-  "Red",
-  "Salt and Pepper",
-  "Shaved",
-  "White",
-  "Silver",
-  "Strawberry",
-];
-
-const quarterFractions = [
-  { label: "1/4", value: ".25" },
-  { label: "1/2", value: ".5" },
-  { label: "3/4", value: ".75" },
-];
-
-const usaCanFemaleMeasurementRanges = {
-  chest: Array.from({ length: 27 }, (_, i) => 25 + i), // 25 to 51
-  waist: Array.from({ length: 23 }, (_, i) => 20 + i), // 20 to 42
-  hips: Array.from({ length: 25 }, (_, i) => 30 + i), // 30 to 54
-};
-
-const euroMetricFemaleMeasurementRanges = {
-  chest: Array.from({ length: 37 }, (_, i) => 64 + i), // 64 to 100
-  waist: Array.from({ length: 31 }, (_, i) => 54 + i), // 54 to 84
-  hips: Array.from({ length: 33 }, (_, i) => 80 + i), // 80 to 112
-};
-
-const usaCanHeights = Array.from({ length: 41 }, (_, i) => {
-  const totalInches = 55 + i; // 4'7 to 7'11 approx
-  const feet = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-
-  return {
-    totalInches,
-    feet,
-    inches,
-    display: `${feet}'${inches}"`,
-    label: `${totalInches} (${feet}'${inches}")`,
-  };
-});
-
-const fractions = [
-  { label: "1/4", value: 0.25 },
-  { label: "1/2", value: 0.5 },
-  { label: "3/4", value: 0.75 },
-];
-
-const formatHeightNumber = (value) => {
-  if (Number.isInteger(value)) {
-    return String(value);
-  }
-
-  return Number(value.toFixed(2)).toString();
-};
-
-const formatUsaCanHeight = (totalInches) => {
-  const feet = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-
-  return `${formatHeightNumber(totalInches)}'' ( ${feet}' ${formatHeightNumber(
-    inches,
-  )}'' )`;
-};
-
-const QuarterMeasurementPicker = ({ label, value, onSelect, options }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className="w-full rounded-md px-4 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
-      >
-        <span
-          className={
-            value ? "text-gray-700" : "text-gray-400 uppercase tracking-wide"
-          }
-        >
-          {value || label}
-        </span>
-
-        <svg
-          className={`w-5 h-5 transition-transform ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute z-50 mt-2 w-[330px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
-          <div className="space-y-1.5">
-            {options.map((num) => (
-              <div
-                key={num}
-                className="grid grid-cols-[56px_14px_1fr] gap-2 items-center"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(String(num));
-                    setOpen(false);
-                  }}
-                  className="border border-gray-400 rounded-md px-2 py-1 text-sm min-w-[56px] leading-none hover:bg-gray-100"
-                >
-                  {num}
-                </button>
-
-                <div className="text-sm text-center">+</div>
-
-                <div className="flex gap-1 flex-nowrap overflow-x-auto">
-                  {quarterFractions.map((fraction) => (
-                    <button
-                      key={fraction.label}
-                      type="button"
-                      onClick={() => {
-                        onSelect(`${num}${fraction.value}`);
-                        setOpen(false);
-                      }}
-                      className="border border-gray-400 rounded-md px-2 py-1 text-xs min-w-[42px] whitespace-nowrap leading-none hover:bg-gray-100"
-                    >
-                      {fraction.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const HalfMeasurementPicker = ({ label, value, onSelect, options }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className="w-full rounded-md px-4 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
-      >
-        <span
-          className={
-            value ? "text-gray-700" : "text-gray-400 uppercase tracking-wide"
-          }
-        >
-          {value || label}
-        </span>
-
-        <svg
-          className={`w-5 h-5 transition-transform ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute z-50 mt-2 w-[220px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
-          <div className="space-y-1.5">
-            {options.map((num) => (
-              <div
-                key={num}
-                className="grid grid-cols-[1fr_56px] gap-2 items-center"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(String(num));
-                    setOpen(false);
-                  }}
-                  className="border border-gray-400 rounded-md px-2 py-1 text-sm leading-none hover:bg-gray-100"
-                >
-                  {num}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(`${num}.5`);
-                    setOpen(false);
-                  }}
-                  className="border border-gray-400 rounded-md px-2 py-1 text-sm leading-none hover:bg-gray-100"
-                >
-                  0.5
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const SimplePopupSelect = ({ label, value, options, onSelect }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className="w-full rounded-md px-4 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
-      >
-        <span
-          className={
-            value ? "text-gray-700" : "text-gray-400 uppercase tracking-wide"
-          }
-        >
-          {value || label}
-        </span>
-
-        <svg
-          className={`w-5 h-5 transition-transform ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute z-50 mt-2 w-[300px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
-          <div className="space-y-1.5">
-            {options.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => {
-                  onSelect(option);
-                  setOpen(false);
-                }}
-                className="w-full border border-gray-400 rounded-md px-3 py-1.5 text-sm text-left hover:bg-gray-100"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+import {
+  euroMetricHeights,
+  suitNumbers,
+  suitFits,
+  dressOptions,
+  cupOptions,
+  shoeOptions,
+  eyeOptions,
+  hairOptions,
+  usaCanMaleMeasurementRanges,
+  euroMetricMaleMeasurementRanges,
+  usaCanFemaleMeasurementRanges,
+  euroMetricFemaleMeasurementRanges,
+  usaCanHeights,
+  fractions,
+  formatUsaCanHeight,
+  createInitialFormData,
+} from "./becomeModel/constants";
+import {
+  QuarterMeasurementPicker,
+  HalfMeasurementPicker,
+  SimplePopupSelect,
+} from "./becomeModel/components/MeasurementPickers";
+import IntroSections from "./becomeModel/components/IntroSections";
 
 const BecomeModel = () => {
   const navigate = useNavigate();
@@ -572,124 +91,7 @@ const BecomeModel = () => {
     setShowSuitDropdown(false);
   };
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    dateOfBirth: "",
-    gender: "",
-    ethnicity: "",
-
-    applyingFor: {
-      division: "",
-      categories: [],
-    },
-
-    stats: {
-      height: {
-        feet: "",
-        inches: "",
-        cm: "",
-      },
-      weight: {
-        lbs: "",
-        kg: "",
-      },
-      bust: "",
-      cup: "",
-      waist: "",
-      hips: "",
-      dress: "",
-      chest: "",
-      suit: "",
-      neck: "",
-      sleeve: "",
-      inseam: "",
-      shoe: "",
-      hairColor: "",
-      eyeColor: "",
-    },
-
-    location: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "United State",
-    },
-
-    parent: {
-      required: false,
-      name: "",
-      relationship: "",
-      phone: "",
-      email: "",
-    },
-
-    experience: {
-      level: "",
-      description: "",
-      previousAgencies: [],
-      professionalPhotos: false,
-      portfolio: {
-        clients: [],
-        campaigns: [],
-        editorials: [],
-      },
-    },
-
-    skills: {
-      acting: false,
-      dancing: false,
-      singing: false,
-      sports: [],
-      languages: [],
-      instruments: [],
-      other: [],
-    },
-
-    social: {
-      instagram: "",
-      facebook: "",
-      twitter: "",
-      tiktok: "",
-      youtube: "",
-      website: "",
-      followers: {
-        instagram: "",
-        facebook: "",
-        twitter: "",
-        tiktok: "",
-        youtube: "",
-      },
-    },
-
-    photos: [],
-
-    introVideo: {
-      url: "",
-      publicId: "",
-      thumbnail: "",
-    },
-
-    additionalInfo: {
-      howDidYouHear: "",
-      referredBy: "",
-      availableToTravel: false,
-      availableToRelocate: false,
-      hasValidPassport: false,
-      visaStatus: "",
-      legalToWork: false,
-    },
-
-    agreements: {
-      termsAccepted: false,
-      photoReleaseAccepted: false,
-      ageVerified: false,
-      parentalConsent: false,
-    },
-  });
+  const [formData, setFormData] = useState(() => createInitialFormData());
 
   // Get selected country code for flag
   const getSelectedCountryCode = () => {
@@ -891,224 +293,10 @@ const BecomeModel = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <div className="relative h-[40vh] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1920&q=80"
-          alt="Become a Model"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center text-white"
-          >
-            <h1 className="text-5xl md:text-6xl font-bold mb-4">
-              Join LA Models
-            </h1>
-            <p className="text-xl text-white/90">
-              Start your modeling career today
-            </p>
-          </motion.div>
-        </div>
-      </div>
+      <IntroSections />
 
       <div className="container-custom py-16">
         <div className="max-w-5xl mx-auto">
-          {/* Important Notice Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12 bg-gray-50 p-8 border-l-4 border-black"
-          >
-            <h2 className="text-2xl font-bold mb-4">Important Notice</h2>
-            <p className="text-gray-700 mb-6 leading-relaxed">
-              LA Model Management is committed to protecting the safety,
-              personal information, images, and well-being of models and those
-              wanting to become a model. Please be aware that there are
-              individuals who may try to prey on your modeling ambitions by
-              impersonating representatives of our agency or other modeling
-              organizations. Such imposters may contact you directly; you should
-              follow certain precautions, including:
-            </p>
-
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-black mt-1 flex-shrink-0" />
-                <p className="text-gray-700">
-                  Be cautious of interactions with individuals who contact you
-                  online through social media or via email. LA Models will only
-                  contact you through our official{" "}
-                  <a
-                    href="mailto:@lamodels.com"
-                    className="font-semibold underline"
-                  >
-                    @lamodels.com
-                  </a>{" "}
-                  or{" "}
-                  <a
-                    href="https://instagram.com/lamodels"
-                    className="font-semibold underline"
-                  >
-                    @lamodels Instagram
-                  </a>
-                  .{" "}
-                  <span className="font-semibold">
-                    We will never ask you to provide payment.
-                  </span>
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-black mt-1 flex-shrink-0" />
-                <p className="text-gray-700">
-                  You should always independently verify the identity of any
-                  individual claiming to be a representative of LA Models or
-                  verify the accuracy of any communication that you receive from
-                  LAModels by calling us at{" "}
-                  <a href="tel:+13234367700" className="font-semibold">
-                    +1 323.436.7700
-                  </a>
-                  . If you believe you have been contacted by someone
-                  impersonating an LA Models representative, please contact our
-                  offices immediately as your first step before responding or
-                  sharing any personal information.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Submission Options */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-12 grid md:grid-cols-2 gap-8"
-          >
-            {/* Online Submission */}
-            <div className="bg-white p-8 border border-gray-200">
-              <h3 className="text-2xl font-bold mb-4">Online Submission</h3>
-              <p className="text-gray-600 mb-6">
-                Fill out our online application form below. This is the fastest
-                way to submit your application.
-              </p>
-              <div className="bg-black text-white px-4 py-2 inline-block text-sm font-medium uppercase">
-                Recommended
-              </div>
-            </div>
-
-            {/* Mail Submission */}
-            <div className="bg-gray-50 p-8 border border-gray-200">
-              <h3 className="text-2xl font-bold mb-4">Mail Submission</h3>
-              <p className="text-gray-600 mb-4">
-                If you cannot meet with us in person or submit online, you may
-                still submit photos. Photos should be current and natural and we
-                prefer non-professional. They may be sent by mail to the address
-                below. Submission & Photographs will not be returned.
-              </p>
-
-              <div className="mt-6 space-y-2 text-sm">
-                <p className="font-semibold">
-                  Women - Please submit via online submission
-                </p>
-                <p className="font-semibold">
-                  Men - Please submit via online submission
-                </p>
-              </div>
-
-              <div className="mt-6 p-4 bg-white">
-                <p className="font-semibold mb-2">LA MODELS</p>
-                <p className="text-sm text-gray-600">
-                  7700 W. Sunset Boulevard
-                  <br />
-                  Los Angeles, CA 90046
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Photo Guidelines */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-12 bg-white p-8 border border-gray-200"
-          >
-            <h3 className="text-2xl font-bold mb-6">Photo Guidelines</h3>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="font-semibold mb-3 text-lg">
-                  What You Should Take:
-                </h4>
-                <ol className="space-y-2 text-gray-700">
-                  <li>1. Headshot straight on</li>
-                  <li>2. Full length body shot</li>
-                  <li>3. 3/4 shot straight on</li>
-                  <li>4. Headshot profiles</li>
-                </ol>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-3 text-lg">
-                  Things to Keep in Mind:
-                </h4>
-                <ol className="space-y-2 text-gray-700">
-                  <li>1. Do not smile</li>
-                  <li>2. Do not pose</li>
-                  <li>
-                    3. Shoot with a plain wall or simple background behind you
-                  </li>
-                  <li>4. Wear a swimsuit</li>
-                  <li>5. Digital photos are best</li>
-                  <li>6. Keep your hair pulled back</li>
-                  <li>7. Do not send large photo files</li>
-                  <li>8. Be as natural as possible - NO MAKE UP!!!</li>
-                  <li>
-                    9. Make sure to include all your statistics including, age,
-                    birth date, height and measurements
-                  </li>
-                </ol>
-              </div>
-            </div>
-
-            {/* Sample Photos */}
-            <div className="mt-8 pt-8 border-t">
-              <h4 className="font-semibold mb-4 text-center">
-                Sample Photo Layout
-              </h4>
-              <div className="grid grid-cols-4 gap-2 max-w-2xl mx-auto">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                  <div
-                    key={num}
-                    className="aspect-square bg-gray-200 flex items-center justify-center text-gray-400 text-sm"
-                  >
-                    Photo {num}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Open Calls Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-12 bg-yellow-50 border-l-4 border-yellow-400 p-6"
-          >
-            <h3 className="text-xl font-bold mb-2">Open Calls</h3>
-            <p className="text-gray-700">
-              <span className="font-semibold">
-                Be advised, our open call is currently CANCELLED until further
-                notice.
-              </span>{" "}
-              We are only accepting online submissions at this time. Please
-              revisit our website for future updates. Thank you.
-            </p>
-          </motion.div>
-
           {/* Application Form Starts Here */}
           <div className="bg-white p-8 md:p-12 border border-gray-200">
             <h2 className="text-3xl font-bold mb-2 text-center">
@@ -1158,7 +346,7 @@ const BecomeModel = () => {
             <form onSubmit={handleSubmit} className="become-model-form">
               {/* Step 1: Personal Information */}
               {step === 1 && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
@@ -1454,12 +642,12 @@ const BecomeModel = () => {
                   >
                     Next Step
                   </button>
-                </motion.div>
+                </Motion.div>
               )}
 
               {/* Step 2: Measurements & Stats */}
               {step === 2 && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
@@ -1736,7 +924,7 @@ const BecomeModel = () => {
                         value={formData.stats.weight.lbs}
                         onChange={handleChange}
                         placeholder="120"
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                        className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-gray-700 transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                       />
                     </div>
 
@@ -1750,7 +938,7 @@ const BecomeModel = () => {
                         value={formData.stats.weight.kg}
                         onChange={handleChange}
                         placeholder="54"
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                        className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-gray-700 transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                       />
                     </div>
                   </div>
@@ -1774,13 +962,13 @@ const BecomeModel = () => {
                               onClick={() =>
                                 setShowDressDropdown((prev) => !prev)
                               }
-                              className="w-full rounded-md px-4 py-2.5 border border-gray-300 bg-white text-left flex items-center justify-between"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-left flex items-center justify-between transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             >
                               <span
                                 className={
                                   formData.stats.dress
-                                    ? "text-gray-700"
-                                    : "text-gray-400 uppercase tracking-wide"
+                                    ? "text-gray-700 text-sm font-medium"
+                                    : "text-gray-400 uppercase tracking-wide text-sm font-medium"
                                 }
                               >
                                 {formData.stats.dress || "DRESS"}
@@ -1802,7 +990,7 @@ const BecomeModel = () => {
                             </button>
 
                             {showDressDropdown && (
-                              <div className="absolute z-50 mt-2 w-[220px] max-h-[500px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+                              <div className="absolute z-50 mt-2 w-[220px] max-h-[500px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-lg p-3">
                                 <div className="space-y-1.5">
                                   {dressOptions[measurementSystem].map(
                                     (option) => (
@@ -1874,7 +1062,7 @@ const BecomeModel = () => {
                               value={formData.stats.chest}
                               onChange={handleChange}
                               placeholder="34"
-                              className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-xs text-gray-700 transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             />
                           )}
                         </div>
@@ -1889,13 +1077,13 @@ const BecomeModel = () => {
                             <button
                               type="button"
                               onClick={() => setShowCupDropdown((prev) => !prev)}
-                              className="w-full rounded-md px-4 py-2.5 border border-gray-300 bg-white text-left flex items-center justify-between"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-left flex items-center justify-between transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             >
                               <span
                                 className={
                                   formData.stats.cup
-                                    ? "text-gray-700"
-                                    : "text-gray-400 uppercase tracking-wide"
+                                    ? "text-gray-700 text-sm font-medium"
+                                    : "text-gray-400 uppercase tracking-wide text-sm font-medium"
                                 }
                               >
                                 {formData.stats.cup || "CUP"}
@@ -1917,7 +1105,7 @@ const BecomeModel = () => {
                             </button>
 
                             {showCupDropdown && (
-                              <div className="absolute z-50 mt-2 w-[190px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+                              <div className="absolute z-50 mt-2 w-[190px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-lg p-3">
                                 <div className="space-y-1.5">
                                   {cupOptions[measurementSystem].map((option) => (
                                     <button
@@ -1987,7 +1175,7 @@ const BecomeModel = () => {
                               value={formData.stats.waist}
                               onChange={handleChange}
                               placeholder="24"
-                              className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-xs text-gray-700 transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             />
                           )}
                         </div>
@@ -2035,7 +1223,7 @@ const BecomeModel = () => {
                               value={formData.stats.hips}
                               onChange={handleChange}
                               placeholder="35"
-                              className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-xs text-gray-700 transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             />
                           )}
                         </div>
@@ -2050,13 +1238,13 @@ const BecomeModel = () => {
                             <button
                               type="button"
                               onClick={() => setShowShoeDropdown((prev) => !prev)}
-                              className="w-full rounded-md px-4 py-2.5 border border-gray-300 bg-white text-left flex items-center justify-between"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-left flex items-center justify-between transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             >
                               <span
                                 className={
                                   formData.stats.shoe
-                                    ? "text-gray-700"
-                                    : "text-gray-400 uppercase tracking-wide"
+                                    ? "text-gray-700 text-sm font-medium"
+                                    : "text-gray-400 uppercase tracking-wide text-sm font-medium"
                                 }
                               >
                                 {formData.stats.shoe || "SHOE"}
@@ -2078,7 +1266,7 @@ const BecomeModel = () => {
                             </button>
 
                             {showShoeDropdown && (
-                              <div className="absolute z-50 mt-2 w-[210px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-md p-3">
+                              <div className="absolute z-50 mt-2 w-[210px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-lg p-3">
                                 <div className="space-y-1.5">
                                   {shoeOptions[measurementSystem].map((option) => (
                                     <button
@@ -2120,28 +1308,74 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Chest
                           </label>
-                          <input
-                            type="text"
-                            name="stats.chest"
-                            value={formData.stats.chest}
-                            onChange={handleChange}
-                            placeholder="40"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="CHEST"
+                              value={formData.stats.chest}
+                              options={usaCanMaleMeasurementRanges.chest}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    chest: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <HalfMeasurementPicker
+                              label="CHEST"
+                              value={formData.stats.chest}
+                              options={euroMetricMaleMeasurementRanges.chest}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    chest: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium mb-2">
                             Waist
                           </label>
-                          <input
-                            type="text"
-                            name="stats.waist"
-                            value={formData.stats.waist}
-                            onChange={handleChange}
-                            placeholder="32"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="WAIST"
+                              value={formData.stats.waist}
+                              options={usaCanMaleMeasurementRanges.waist}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    waist: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <HalfMeasurementPicker
+                              label="WAIST"
+                              value={formData.stats.waist}
+                              options={euroMetricMaleMeasurementRanges.waist}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    waist: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -2156,13 +1390,13 @@ const BecomeModel = () => {
                               onClick={() =>
                                 setShowSuitDropdown((prev) => !prev)
                               }
-                              className="w-full px-6 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-left flex items-center justify-between transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             >
                               <span
                                 className={
                                   formData.stats.suit
-                                    ? "text-gray-700"
-                                    : "text-gray-400 uppercase tracking-wide"
+                                    ? "text-gray-700 text-sm font-medium"
+                                    : "text-gray-400 uppercase tracking-wide text-sm font-medium"
                                 }
                               >
                                 {formData.stats.suit || "SUIT"}
@@ -2184,7 +1418,7 @@ const BecomeModel = () => {
                             </button>
 
                             {showSuitDropdown && (
-                              <div className="absolute z-50 mt-2 w-full max-h-[500px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-sm p-4">
+                              <div className="absolute z-50 mt-2 w-full max-h-[500px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-lg p-4">
                                 <div className="space-y-2">
                                   {suitNumbers[measurementSystem].map((num) => (
                                     <div
@@ -2202,7 +1436,7 @@ const BecomeModel = () => {
                                       </button>
 
                                       <div className="text-sm text-center">
-                                        •
+                                        â€¢
                                       </div>
 
                                       <div className="flex gap-1 flex-nowrap overflow-x-auto">
@@ -2231,14 +1465,37 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Neck
                           </label>
-                          <input
-                            type="text"
-                            name="stats.neck"
-                            value={formData.stats.neck}
-                            onChange={handleChange}
-                            placeholder="15.5"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="NECK"
+                              value={formData.stats.neck}
+                              options={usaCanMaleMeasurementRanges.neck}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    neck: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <HalfMeasurementPicker
+                              label="NECK"
+                              value={formData.stats.neck}
+                              options={euroMetricMaleMeasurementRanges.neck}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    neck: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -2247,28 +1504,74 @@ const BecomeModel = () => {
                           <label className="block text-sm font-medium mb-2">
                             Sleeve
                           </label>
-                          <input
-                            type="text"
-                            name="stats.sleeve"
-                            value={formData.stats.sleeve}
-                            onChange={handleChange}
-                            placeholder="34"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="SLEEVE LENGTH"
+                              value={formData.stats.sleeve}
+                              options={usaCanMaleMeasurementRanges.sleeve}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    sleeve: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <HalfMeasurementPicker
+                              label="SLEEVE LENGTH"
+                              value={formData.stats.sleeve}
+                              options={euroMetricMaleMeasurementRanges.sleeve}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    sleeve: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium mb-2">
                             Inseam
                           </label>
-                          <input
-                            type="text"
-                            name="stats.inseam"
-                            value={formData.stats.inseam}
-                            onChange={handleChange}
-                            placeholder="32"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
-                          />
+                          {measurementSystem === "usa-can" ? (
+                            <QuarterMeasurementPicker
+                              label="INSEAM"
+                              value={formData.stats.inseam}
+                              options={usaCanMaleMeasurementRanges.inseam}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    inseam: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          ) : (
+                            <HalfMeasurementPicker
+                              label="INSEAM"
+                              value={formData.stats.inseam}
+                              options={euroMetricMaleMeasurementRanges.inseam}
+                              onSelect={(selectedValue) =>
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  stats: {
+                                    ...prev.stats,
+                                    inseam: selectedValue,
+                                  },
+                                }))
+                              }
+                            />
+                          )}
                         </div>
 
                         <div>
@@ -2279,13 +1582,13 @@ const BecomeModel = () => {
                             <button
                               type="button"
                               onClick={() => setShowShoeDropdown((prev) => !prev)}
-                              className="w-full px-6 py-3 border border-gray-300 bg-white text-left flex items-center justify-between"
+                              className="w-full rounded-lg px-4 py-3 border border-gray-300 bg-white text-sm font-medium text-left flex items-center justify-between transition-all duration-200 hover:border-gray-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-black/10"
                             >
                               <span
                                 className={
                                   formData.stats.shoe
-                                    ? "text-gray-700"
-                                    : "text-gray-400 uppercase tracking-wide"
+                                    ? "text-gray-700 text-sm font-medium"
+                                    : "text-gray-400 uppercase tracking-wide text-sm font-medium"
                                 }
                               >
                                 {formData.stats.shoe || "SHOE"}
@@ -2307,7 +1610,7 @@ const BecomeModel = () => {
                             </button>
 
                             {showShoeDropdown && (
-                              <div className="absolute z-50 mt-2 w-[210px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-sm p-3">
+                              <div className="absolute z-50 mt-2 w-[210px] max-h-[520px] overflow-y-auto bg-white border border-gray-300 shadow-xl rounded-lg p-3">
                                 <div className="space-y-1.5">
                                   {shoeOptions[measurementSystem].map((option) => (
                                     <button
@@ -2393,7 +1696,7 @@ const BecomeModel = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-0 border border-gray-200">
                         <div className="flex items-center px-4 py-3 gap-2.5 border-b md:border-b-0 md:border-r border-gray-200">
-                          <Camera className="w-5 h-5 text-gray-500" />
+                          <FaInstagram className="w-5 h-5 text-gray-500" />
                           <input
                             type="text"
                             name="social.instagram"
@@ -2417,7 +1720,7 @@ const BecomeModel = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-0 border border-gray-200">
                         <div className="flex items-center px-4 py-3 gap-2.5 border-b md:border-b-0 md:border-r border-gray-200">
-                          <Globe className="w-5 h-5 text-gray-500" />
+                          <FaFacebookF className="w-5 h-5 text-gray-500" />
                           <input
                             type="text"
                             name="social.facebook"
@@ -2441,7 +1744,7 @@ const BecomeModel = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-0 border border-gray-200">
                         <div className="flex items-center px-4 py-3 gap-2.5 border-b md:border-b-0 md:border-r border-gray-200">
-                          <Send className="w-5 h-5 text-gray-500" />
+                          <FaXTwitter className="w-5 h-5 text-gray-500" />
                           <input
                             type="text"
                             name="social.twitter"
@@ -2495,12 +1798,12 @@ const BecomeModel = () => {
                       Next Step
                     </button>
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
 
               {/* Step 3: Experience */}
               {step === 3 && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
@@ -2666,12 +1969,12 @@ const BecomeModel = () => {
                       Next Step
                     </button>
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
 
               {/* Step 4: Photos & Video Upload */}
               {step === 4 && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
@@ -2716,13 +2019,16 @@ const BecomeModel = () => {
                     {/* Uploaded Photos Preview */}
                     {uploadedPhotos.length > 0 && (
                       <div className="mt-4 grid grid-cols-4 gap-4">
-                        {uploadedPhotos.map((photo) => (
+                        {uploadedPhotos.map((photo, index) => (
                           <div key={photo.publicId} className="relative group">
                             <img
                               src={photo.url}
                               alt="Upload preview"
                               className="w-full aspect-square object-cover"
                             />
+                            <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-white">
+                              Image{index + 1}
+                            </div>
                             <button
                               type="button"
                               onClick={() => removePhoto(photo.publicId)}
@@ -2807,12 +2113,12 @@ const BecomeModel = () => {
                       Next Step
                     </button>
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
 
               {/* Step 5: Agreement */}
               {step === 5 && (
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
@@ -2905,7 +2211,7 @@ const BecomeModel = () => {
                       )}
                     </button>
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
             </form>
           </div>
@@ -2916,3 +2222,4 @@ const BecomeModel = () => {
 };
 
 export default BecomeModel;
+

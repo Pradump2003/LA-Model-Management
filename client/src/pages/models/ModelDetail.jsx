@@ -51,7 +51,25 @@ const ModelDetail = () => {
   ].filter(Boolean);
 
   return (
-    <div className="pt-20 min-h-screen">
+    <div className="min-h-screen">
+      <div className="relative h-[45vh] overflow-hidden">
+        <img
+          src={images[0] || "https://via.placeholder.com/1200x800"}
+          alt={`${model.firstName} ${model.lastName}`}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
+          <div className="text-center text-white px-4">
+            <h1 className="text-5xl md:text-6xl font-bold mb-3">
+              {model.firstName} {model.lastName}
+            </h1>
+            <p className="text-base md:text-lg uppercase tracking-wide text-white/90">
+              {model.division}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="container-custom py-16">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Images */}
@@ -92,9 +110,9 @@ const ModelDetail = () => {
 
           {/* Details */}
           <div>
-            <h1 className="text-5xl font-bold mb-4">
+            <h2 className="text-5xl font-bold mb-4">
               {model.firstName} {model.lastName}
-            </h1>
+            </h2>
             <p className="text-xl text-gray-600 mb-8 uppercase">
               {model.division}
             </p>

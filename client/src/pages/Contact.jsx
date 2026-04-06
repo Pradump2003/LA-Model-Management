@@ -55,7 +55,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <div className="relative h-[50vh] overflow-hidden">
+      <div className="relative h-[60vh] overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1920&q=80"
           alt="Contact"
