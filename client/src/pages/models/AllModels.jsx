@@ -1,4 +1,3 @@
-// src/pages/models/AllModels.jsx
 import ModelPageLayout from "../../components/models/ModelPageLayout";
 
 const AllModels = () => {

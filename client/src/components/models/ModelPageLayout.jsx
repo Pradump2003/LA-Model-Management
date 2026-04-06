@@ -14,6 +14,7 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
   const page = parseInt(searchParams.get("page")) || 1;
   const category = searchParams.get("category") || "";
   const searchQuery = searchParams.get("q") || "";
+  const letter = searchParams.get("letter") || "";
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -33,9 +34,14 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
           params.category = category;
         }
 
-        if (searchQuery) {
+        // Letter takes priority over search
+        if (letter) {
+          params.letter = letter;
+        } else if (searchQuery) {
           params.search = searchQuery;
         }
+
+        console.log("Fetching models with params:", params); // Debug log
 
         const response = await modelsAPI.getAll(params);
 
@@ -51,7 +57,7 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
     };
 
     fetchModels();
-  }, [division, page, category, searchQuery]);
+  }, [division, page, category, searchQuery, letter]);
 
   const categories =
     division === "women" || division === "men"
@@ -62,13 +68,61 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
           ? ["girls", "boys", "family"]
           : [];
 
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
   const handlePageChange = (newPage) => {
-    setSearchParams({
-      page: newPage,
-      ...(category && { category }),
-      ...(searchQuery && { q: searchQuery }),
-    });
+    const params = { page: newPage };
+
+    if (category) params.category = category;
+    if (letter) {
+      params.letter = letter;
+    } else if (searchQuery) {
+      params.q = searchQuery;
+    }
+
+    setSearchParams(params);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleLetterClick = (selectedLetter) => {
+    const params = {
+      page: 1,
+      letter: selectedLetter,
+    };
+
+    if (category) params.category = category;
+    // Don't include search query when letter is selected
+
+    setSearchParams(params);
+  };
+
+  const handleCategoryClick = (selectedCategory) => {
+    const params = { page: 1 };
+
+    if (selectedCategory) params.category = selectedCategory;
+
+    if (letter) {
+      params.letter = letter;
+    } else if (searchQuery) {
+      params.q = searchQuery;
+    }
+
+    setSearchParams(params);
+  };
+
+  const clearAllFilters = () => {
+    setSearchParams({ page: 1 });
+  };
+
+  const removeFilter = (filterType) => {
+    const params = { page: 1 };
+
+    if (filterType !== "search" && searchQuery && !letter)
+      params.q = searchQuery;
+    if (filterType !== "category" && category) params.category = category;
+    if (filterType !== "letter" && letter) params.letter = letter;
+
+    setSearchParams(params);
   };
 
   return (
@@ -104,31 +158,52 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
       </div>
 
       <div className="container-custom py-16">
+        {/* Alphabet Filter */}
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2 justify-center items-center">
+            <button
+              onClick={clearAllFilters}
+              className={`px-4 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
+                !letter && !category && !searchQuery
+                  ? "bg-black text-white"
+                  : "bg-gray-100 text-black hover:bg-gray-200"
+              }`}
+            >
+              ALL
+            </button>
+            {alphabet.map((char) => (
+              <button
+                key={char}
+                onClick={() => handleLetterClick(char)}
+                className={`px-3 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
+                  letter === char
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-black hover:bg-gray-200"
+                }`}
+              >
+                {char}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Category Filter */}
         {categories.length > 0 && (
           <div className="mb-8 flex flex-wrap gap-3">
             <button
-              onClick={() =>
-                setSearchParams({ page: 1, ...(searchQuery && { q: searchQuery }) })
-              }
+              onClick={() => handleCategoryClick("")}
               className={`px-6 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
                 !category
                   ? "bg-black text-white"
                   : "bg-gray-100 text-black hover:bg-gray-200"
               }`}
             >
-              All
+              All Categories
             </button>
             {categories.map((cat) => (
               <button
                 key={cat}
-                onClick={() =>
-                  setSearchParams({
-                    page: 1,
-                    category: cat,
-                    ...(searchQuery && { q: searchQuery }),
-                  })
-                }
+                onClick={() => handleCategoryClick(cat)}
                 className={`px-6 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
                   category === cat
                     ? "bg-black text-white"
@@ -141,26 +216,69 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
           </div>
         )}
 
-        {searchQuery && (
-          <div className="mb-6 flex items-center gap-3 text-sm">
-            <span className="text-gray-500">Search:</span>
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-black">
-              {searchQuery}
-            </span>
+        {/* Active Filters */}
+        {(searchQuery || category || letter) && (
+          <div className="mb-6 flex items-center gap-3 text-sm flex-wrap">
+            <span className="text-gray-500">Active Filters:</span>
+            {searchQuery && !letter && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-black flex items-center gap-2">
+                Search: {searchQuery}
+                <button
+                  type="button"
+                  onClick={() => removeFilter("search")}
+                  className="text-gray-600 hover:text-black"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {category && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-black flex items-center gap-2">
+                Category: {category.replace("-", " ")}
+                <button
+                  type="button"
+                  onClick={() => removeFilter("category")}
+                  className="text-gray-600 hover:text-black"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {letter && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-black flex items-center gap-2">
+                Letter: {letter}
+                <button
+                  type="button"
+                  onClick={() => removeFilter("letter")}
+                  className="text-gray-600 hover:text-black"
+                >
+                  ×
+                </button>
+              </span>
+            )}
             <button
               type="button"
-              onClick={() =>
-                setSearchParams({ page: 1, ...(category && { category }) })
-              }
+              onClick={clearAllFilters}
               className="text-gray-600 underline hover:text-black"
             >
-              Clear
+              Clear All
             </button>
           </div>
         )}
 
         {/* Models Grid */}
         <ModelGrid models={models} loading={loading} />
+
+        {/* No Results Message */}
+        {!loading && models.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">
+              No models found {letter && `starting with "${letter}"`}
+              {category && ` in category "${category.replace("-", " ")}"`}
+              {searchQuery && ` matching "${searchQuery}"`}.
+            </p>
+          </div>
+        )}
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
@@ -208,9 +326,11 @@ const ModelPageLayout = ({ division, title, description, heroImage }) => {
         )}
 
         {/* Results info */}
-        <div className="text-center mt-6 text-sm text-gray-600">
-          Showing {models.length} of {pagination.total} models
-        </div>
+        {pagination.total > 0 && (
+          <div className="text-center mt-6 text-sm text-gray-600">
+            Showing {models.length} of {pagination.total} models
+          </div>
+        )}
       </div>
     </div>
   );

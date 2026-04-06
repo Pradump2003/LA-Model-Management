@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const Application = require("../models/application");
 const Model = require("../models/model");
 const ApiResponse = require("../utils/ApiResponse.utils");
+const uploadService = require("../services/upload.service");
 const {
   sendApplicationToAdmin,
   sendApplicationConfirmation,
@@ -12,6 +13,37 @@ const {
 // SUBMIT APPLICATION (Public)
 // ============================================
 exports.submitApplication = asyncHandler(async (req, res) => {
+  const parseJsonMaybe = (value) => {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  };
+
+  const stripEmptyStringsDeep = (value) => {
+    if (value === "") return undefined;
+
+    if (Array.isArray(value)) {
+      const cleaned = value
+        .map(stripEmptyStringsDeep)
+        .filter((v) => v !== undefined && v !== "");
+      return cleaned;
+    }
+
+    if (value && typeof value === "object") {
+      const out = {};
+      for (const [key, val] of Object.entries(value)) {
+        const cleanedVal = stripEmptyStringsDeep(val);
+        if (cleanedVal !== undefined) out[key] = cleanedVal;
+      }
+      return out;
+    }
+
+    return value;
+  };
+
   const {
     firstName,
     lastName,
@@ -19,11 +51,24 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     phone,
     dateOfBirth,
     gender,
-    applyingFor,
-    stats,
-    location,
-    agreements,
+    applyingFor: applyingForRaw,
+    stats: statsRaw,
+    location: locationRaw,
+    agreements: agreementsRaw,
   } = req.body;
+
+  const applyingFor = stripEmptyStringsDeep(parseJsonMaybe(applyingForRaw)) || {};
+  const stats = stripEmptyStringsDeep(parseJsonMaybe(statsRaw)) || {};
+  const location = stripEmptyStringsDeep(parseJsonMaybe(locationRaw)) || {};
+  const agreements = stripEmptyStringsDeep(parseJsonMaybe(agreementsRaw)) || {};
+
+  const parent = stripEmptyStringsDeep(parseJsonMaybe(req.body.parent || {})) || {};
+  const experience = stripEmptyStringsDeep(parseJsonMaybe(req.body.experience || {})) || {};
+  const skills = stripEmptyStringsDeep(parseJsonMaybe(req.body.skills || {})) || {};
+  const social = stripEmptyStringsDeep(parseJsonMaybe(req.body.social || {})) || {};
+  const introVideo = stripEmptyStringsDeep(parseJsonMaybe(req.body.introVideo || {})) || {};
+  const additionalInfo =
+    stripEmptyStringsDeep(parseJsonMaybe(req.body.additionalInfo || {})) || {};
 
   // Required fields validation
   if (!firstName || !lastName || !email || !phone || !dateOfBirth || !gender) {
@@ -105,16 +150,54 @@ exports.submitApplication = asyncHandler(async (req, res) => {
   // Handle photos from multer
   let photos = [];
   if (req.files && req.files.length > 0) {
-    photos = req.files.map((file, index) => ({
-      url: file.path,
-      publicId: file.filename,
+    const uploadResults = await uploadService.uploadMultipleImages(
+      req.files,
+      "applications",
+    );
+
+    photos = uploadResults.map((result, index) => ({
+      url: result.secure_url,
+      publicId: result.public_id,
       type: req.body.photoTypes
         ? req.body.photoTypes[index] || "other"
         : "other",
       uploadedAt: new Date(),
     }));
   } else if (req.body.photos) {
-    photos = req.body.photos;
+    const providedPhotos = parseJsonMaybe(req.body.photos);
+
+    if (Array.isArray(providedPhotos) && providedPhotos.length > 0) {
+      const limited = providedPhotos.slice(0, 6);
+
+      const normalized = await Promise.all(
+        limited.map(async (photo) => {
+          const photoObj = typeof photo === "string" ? { url: photo } : (photo || {});
+          const url = photoObj.url;
+
+          if (!url || typeof url !== "string") return null;
+
+          if (url.startsWith("data:")) {
+            const result = await uploadService.uploadImage(url, "applications");
+            return {
+              url: result.secure_url,
+              publicId: result.public_id,
+              type: photoObj.type || "other",
+              uploadedAt: new Date(),
+            };
+          }
+
+          // Already a URL — keep it.
+          return {
+            url,
+            publicId: photoObj.publicId,
+            type: photoObj.type || "other",
+            uploadedAt: new Date(),
+          };
+        }),
+      );
+
+      photos = normalized.filter(Boolean);
+    }
   }
 
   // Create application
@@ -127,15 +210,15 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     gender,
     ethnicity: req.body.ethnicity,
     applyingFor,
-    stats: stats || {},
+    stats,
     location,
-    parent: req.body.parent || {},
-    experience: req.body.experience || {},
-    skills: req.body.skills || {},
-    social: req.body.social || {},
+    parent,
+    experience,
+    skills,
+    social,
     photos,
-    introVideo: req.body.introVideo || {},
-    additionalInfo: req.body.additionalInfo || {},
+    introVideo,
+    additionalInfo,
     agreements: {
       ...agreements,
       acceptedAt: new Date(),

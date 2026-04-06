@@ -9,6 +9,12 @@ const fs = require("fs");
  */
 exports.uploadImage = async (filePath, folder = "uploads") => {
   try { 
+    const shouldDeleteLocalFile =
+      typeof filePath === "string" &&
+      !filePath.startsWith("data:") &&
+      !filePath.startsWith("http://") &&
+      !filePath.startsWith("https://");
+
     const result = await cloudinary.uploader.upload(filePath, {
       folder: folder,
       transformation: [
@@ -20,14 +26,20 @@ exports.uploadImage = async (filePath, folder = "uploads") => {
     });
 
     // Delete temporary file after successful upload
-    if (fs.existsSync(filePath)) {
+    if (shouldDeleteLocalFile && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
     return result;
   } catch (error) {
     // Delete temporary file on error
-    if (fs.existsSync(filePath)) {
+    const shouldDeleteLocalFile =
+      typeof filePath === "string" &&
+      !filePath.startsWith("data:") &&
+      !filePath.startsWith("http://") &&
+      !filePath.startsWith("https://");
+
+    if (shouldDeleteLocalFile && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
     throw new Error(`Image upload failed: ${error.message}`);
@@ -43,7 +55,7 @@ exports.uploadImage = async (filePath, folder = "uploads") => {
 exports.uploadMultipleImages = async (files, folder = "uploads") => {
   try {
     const uploadPromises = files.map((file) =>
-      this.uploadImage(file.path, folder),
+      exports.uploadImage(file.path, folder),
     );
     const results = await Promise.all(uploadPromises);
     return results;

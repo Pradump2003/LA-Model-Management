@@ -61,7 +61,7 @@ export const applicationsAPI = {
 // Contact API
 export const contactAPI = {
   // Submit contact form
-  submit: (data) => api.post("/contact", data),
+  submit: (data) => api.post("/contacts", data),
 };
 
 export default api;

@@ -11,6 +11,7 @@ const Contact = () => {
     window.scrollTo(0, 0);
   }, [location]);
   const [formData, setFormData] = useState({
+    inquiryType: "general",
     name: "",
     email: "",
     phone: "",
@@ -147,6 +148,24 @@ const Contact = () => {
             animate={{ opacity: 1, x: 0 }}
           >
             <form onSubmit={handleSubmit} className="space-y-6">
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Inquiry Type *</label>
+                <select
+                  name="inquiryType"
+                  value={formData.inquiryType}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 focus:border-black focus:ring-1 focus:ring-black outline-none"
+                >
+                  <option value="general">General Inquiry</option>
+                  <option value="model-booking">Model Booking</option>
+                  <option value="collaboration">Collaboration</option>
+                  <option value="press">Press</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">Name *</label>
                 <input

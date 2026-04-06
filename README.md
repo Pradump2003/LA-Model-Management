@@ -120,7 +120,6 @@ LA Model Manegment/
 │       │   ├── Contact.jsx
 │       │   ├── Home.jsx
 │       │   ├── ModelDetail.jsx
-│       │   ├── Models.jsx
 │       │   ├── Press.jsx
 │       │   └── models/
 │       │       ├── AllModels.jsx
