@@ -86,7 +86,7 @@ const LatestNews = () => {
               transition={{ delay: index * 0.1 }}
             >
               <Link to={`/news/${blog.slug}`} className="group block">
-                <div className="aspect-video overflow-hidden bg-gray-100 mb-4">
+                <div className="h-96 overflow-hidden bg-gray-100 mb-4">
                   <img
                     src={sanitizeBlogImageUrl(blog.featuredImage?.url) || FALLBACK_BLOG_IMAGE}
                     alt={blog.title}

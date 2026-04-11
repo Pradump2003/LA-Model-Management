@@ -94,11 +94,16 @@ const Blogs = () => {
           ) : (
             <div className="grid md:grid-cols-3 gap-8">
               {blogs.map((blog) => (
-                <article key={blog._id} className="border border-gray-200 p-4">
+                <Link
+                  key={blog._id}
+                  to={`/news/${blog.slug}`}
+                  className="border border-gray-200 p-4 block hover:shadow-lg transition-shadow duration-200 group"
+                  tabIndex={0}
+                >
                   <img
                     src={blog.featuredImage?.url || FALLBACK_BLOG_IMAGE}
                     alt={blog.title || "Blog Image"}
-                    className="w-full h-48 object-cover mb-4"
+                    className="w-full h-96 object-cover mb-4 group-hover:opacity-90 transition-opacity duration-200"
                     onError={(event) => {
                       event.currentTarget.src = FALLBACK_BLOG_IMAGE;
                     }}
@@ -108,15 +113,10 @@ const Blogs = () => {
                       ? new Date(blog.publishedAt).toLocaleDateString("en-US")
                       : "Unpublished"}
                   </p>
-                  <h3 className="text-xl font-semibold mb-2">{blog.title}</h3>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-700 transition-colors duration-200">{blog.title}</h3>
                   <p className="text-gray-600 text-sm mb-4">{blog.excerpt}</p>
-                  <Link
-                    to={`/news/${blog.slug}`}
-                    className="text-sm font-medium underline"
-                  >
-                    Read more
-                  </Link>
-                </article>
+                  <span className="text-sm font-medium underline">Read more</span>
+                </Link>
               ))}
             </div>
           )}
