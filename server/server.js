@@ -96,9 +96,6 @@ app.use((err, req, res, next) => {
 });
 
 
-const PORT = Number.parseInt(process.env.PORT, 10) || 9000;
-const HOST = process.env.HOST || undefined;
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// For Vercel serverless: export the app instance instead of listening
+module.exports = app;
