@@ -1,9 +1,10 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
-// Create uploads directory if it doesn't exist
-const uploadDir = "uploads/temp";
+// Use /tmp for uploads in serverless (Vercel) environments
+const uploadDir = path.join(os.tmpdir(), "uploads", "temp");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
